@@ -52,8 +52,8 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
 
     @Override
     public void getDescription(StringBuilder stringBuilder, int i) {
-        logger.info("Hoeffding Adaptive Tree for evolving data streams "
-                + "that uses ADWIN to replace branches for new ones.");
+        logger.info("Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace "
+                + "branches for new ones.");
     }
 
     public AdaptiveHoeffdingTreeModel(String modelName) {

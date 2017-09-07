@@ -437,7 +437,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
 
     @Override
     public void stop() {
-        //delete model
+        AdaptiveHoeffdingModelsHolder.getInstance().deleteHoeffdingModel(modelName);
     }
 
     @Override

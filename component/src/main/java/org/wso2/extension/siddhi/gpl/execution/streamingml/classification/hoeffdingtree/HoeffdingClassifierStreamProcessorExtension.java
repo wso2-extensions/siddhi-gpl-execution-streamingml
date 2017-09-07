@@ -201,7 +201,7 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
 
     @Override
     public void stop() {
-
+        AdaptiveHoeffdingModelsHolder.getInstance().deleteHoeffdingModel(modelName);
     }
 
     @Override

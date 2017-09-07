@@ -56,6 +56,10 @@ public class AdaptiveHoeffdingModelsHolder {
         hoeffdingModelMap.put(name, model);
     }
 
+    public void deleteHoeffdingModel(String name) {
+        hoeffdingModelMap.remove(name);
+    }
+
     public Map<String, AdaptiveHoeffdingTreeModel> getClonedHoeffdingModelMap() {
         Map<String, AdaptiveHoeffdingTreeModel> clonedMap = new HashMap<>();
         for (Map.Entry<String, AdaptiveHoeffdingTreeModel> entry : hoeffdingModelMap.entrySet()) {
