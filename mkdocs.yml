@@ -1,4 +1,4 @@
-site_name: Siddhi-Execution-StreamingML
+site_name: Siddhi-GPL-Execution-StreamingML
 extra_css:
 - stylesheets/extra.css
 extra_javascript:
@@ -13,8 +13,8 @@ google_analytics:
 - UA-103065-28
 - auto
 pages:
-- Welcome to WSO2 Siddhi Execution StreamingML: index.md
-- API Docs:
-  - 1.0.0-SNAPSHOT: api/1.0.0-SNAPSHOT.md
+- Welcome to WSO2 Siddhi GPL Execution StreamingML: index.md
 - License: LICENSE.md
+- API Docs:
+  - 1.0.1-SNAPSHOT: api/1.0.1-SNAPSHOT.md
 theme: material

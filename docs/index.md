@@ -3,13 +3,14 @@ The **siddhi-execution-streamingml** is an extension to <a target="_blank" href=
 .io/siddhi">Siddhi</a>  that performs streaming machine learning on event streams.
 
 Find some useful links below:
+
 * <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml">Source code</a>
 * <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml/releases">Releases</a>
 * <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml/issues">Issue tracker</a>
 
 ## Latest API Docs
 
-Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT">1.0.0-SNAPSHOT</a>.
+Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT">1.0.1-SNAPSHOT</a>.
 
 ## How to use 
 
@@ -17,7 +18,7 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
 
 * You can use this extension in the latest <a target="_blank" href="https://github.com/wso2/product-sp/releases">WSO2 Stream Processor</a> that is a part of <a target="_blank" href="http://wso2.com/analytics?utm_source=gitanalytics&utm_campaign=gitanalytics_Jul17">WSO2 Analytics</a> offering, with editor, debugger and simulation support. 
 
-* This extension is shipped by default with WSO2 Stream Processor, if you wish to use an alternative version of this extension you can replace the component <a target="_blank" href="https://https://github.com/wso2-extensions/siddhi-execution-streamingml/releases">jar</a> that can be found in the `<STREAM_PROCESSOR_HOME>/lib` directory.
+* To use this extension, you have to add the component <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml/releases">jar</a> in to the `<STREAM_PROCESSOR_HOME>/lib` directory.
 
 **Using the extension as a <a target="_blank" href="https://wso2.github.io/siddhi/documentation/running-as-a-java-library">java library</a>**
 
@@ -31,16 +32,26 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
      </dependency>
 ```
 
+## Jenkins Build Status
+
+---
+
+|  Branch | Build Status |
+| :------ |:------------ | 
+| master  | [![Build Status](https://wso2.org/jenkins/view/All%20Builds/job/siddhi/job/siddhi-gpl-execution-streamingml/badge/icon)](https://wso2.org/jenkins/view/All%20Builds/job/siddhi/job/siddhi-gpl-execution-streamingml/) |
+
+---
+
 ## Features
 
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT/#hoeffdingtreeclassifier-stream-processor">hoeffdingTreeClassifier</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs classification with Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT/#updatehoeffdingtree-stream-processor">updateHoeffdingTree</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs build/update of Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT/#hoeffdingtreeclassifier-stream-processor">hoeffdingTreeClassifier</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs classification with Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT/#updatehoeffdingtree-stream-processor">updateHoeffdingTree</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs build/update of Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
 
 ## How to Contribute
  
-  * Please report issues at <a target="_blank" href="https://github.com/wso2-extensions/siddhi-execution-streamingml/issues">GitHub Issue Tracker</a>.
+  * Please report issues at <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml/issues">GitHub Issue Tracker</a>.
   
-  * Send your contributions as pull requests to <a target="_blank" href="https://github.com/wso2-extensions/siddhi-execution-streamingml/tree/master">master branch</a>. 
+  * Send your contributions as pull requests to <a target="_blank" href="https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml/tree/master">master branch</a>. 
  
 ## Contact us 
 
