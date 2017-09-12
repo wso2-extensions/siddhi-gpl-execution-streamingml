@@ -9,7 +9,7 @@ Find some useful links below:
 
 ## Latest API Docs
 
-Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT">1.0.0-SNAPSHOT</a>.
+Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT">1.0.1-SNAPSHOT</a>.
 
 ## How to use 
 
@@ -33,8 +33,8 @@ Latest API Docs is <a target="_blank" href="https://wso2-extensions.github.io/si
 
 ## Features
 
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT/#hoeffdingtreeclassifier-stream-processor">hoeffdingTreeClassifier</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs classification with Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
-* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.0-SNAPSHOT/#updatehoeffdingtree-stream-processor">updateHoeffdingTree</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs build/update of Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT/#updatehoeffdingtree-stream-processor">updateHoeffdingTree</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs build/update of Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
+* <a target="_blank" href="https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/api/1.0.1-SNAPSHOT/#hoeffdingtreeclassifier-stream-processor">hoeffdingTreeClassifier</a> *(<a target="_blank" href="https://wso2.github.io/siddhi/documentation/siddhi-4.0/#stream-processors">Stream Processor</a>)*<br><div style="padding-left: 1em;"><p>Performs classification with Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace branches for new ones.</p></div>
 
 ## How to Contribute
  

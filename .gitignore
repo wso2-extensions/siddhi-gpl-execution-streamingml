@@ -25,3 +25,6 @@ target
 # Ignore target directories
 target/
 *.*~
+
+org/wso2/extension/siddhi/gpl/execution/streamingml/clustering/clustree/a1.csv
+TryMOA.class
