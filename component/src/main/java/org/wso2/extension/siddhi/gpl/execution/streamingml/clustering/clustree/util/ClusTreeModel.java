@@ -30,6 +30,7 @@ import moa.options.AbstractOptionHandler;
 import moa.streams.InstanceStream;
 import moa.tasks.TaskMonitor;
 import org.apache.log4j.Logger;
+import java.util.LinkedList;
 
 /**
  * Represents the ClusTree model
@@ -61,7 +62,7 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param noOfAttributes number of feature attributes
      * @param noOfClusters    number of classes
      */
-    public void init(int noOfAttributes, int noOfClusters) {
+    public synchronized void init(int noOfAttributes, int noOfClusters) {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Model [%s] is being initialized.", this.modelName));
         }
@@ -77,19 +78,19 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param cepEvent   event data
      * @param classLabel class  label of the cepEvent
      */
-    public void trainOnEvent(double[] cepEvent, String classLabel) {
+    public synchronized void trainOnEvent(double[] cepEvent, String classLabel) {
         Instance trainInstance = createMOAInstance(cepEvent);
         //training on the event instance
         clusTree.trainOnInstanceImpl(trainInstance);
     }
 
     @Override
-    protected void prepareForUseImpl(TaskMonitor monitor, ObjectRepository repository) {
+    protected synchronized void prepareForUseImpl(TaskMonitor monitor, ObjectRepository repository) {
 
     }
 
     @Override
-    public void getDescription(StringBuilder sb, int indent) {
+    public synchronized void getDescription(StringBuilder sb, int indent) {
 
     }
 
@@ -97,14 +98,14 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param cepEvent Event Data
      * @return represents a single Event
      */
-    private Instance createMOAInstance(double[] cepEvent) {
+    private synchronized Instance createMOAInstance(double[] cepEvent) {
         Instance instance = new DenseInstance(1.0D, cepEvent);
         //set schema header for the instance
         instance.setDataset(streamHeader);
         return instance;
     }
 
-    private InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
+    private synchronized InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
         FastVector headerAttributes = new FastVector();
         for (int i = 0; i < numberOfAttributes - 1; i++) {
             headerAttributes.addElement(
@@ -116,7 +117,19 @@ public class ClusTreeModel  extends AbstractOptionHandler {
         return streamHeader;
     }
 
-    private Clustering getClustering() {
+    public synchronized Clustering getMicroClustering() {
+        return clusTree.getMicroClusteringResult();
+    }
 
+    public synchronized LinkedList<DataPoint> getMicroClusteringAsDPArray() {
+        LinkedList<DataPoint> microClusterDPArray = new LinkedList<>();
+        Clustering microClusters = getMicroClustering();
+        for (int i = 0; i < microClusters.size(); i++) {
+            DataPoint dp = new DataPoint();
+            dp.setCoordinates(microClusters.get(i).getCenter());
+            dp.setWeight(microClusters.get(i).getWeight());
+            microClusterDPArray.add(dp);
+        }
+        return microClusterDPArray;
     }
 }
