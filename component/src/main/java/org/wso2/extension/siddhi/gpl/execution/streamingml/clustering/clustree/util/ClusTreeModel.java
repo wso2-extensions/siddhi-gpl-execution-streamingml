@@ -59,18 +59,20 @@ public class ClusTreeModel  extends AbstractOptionHandler {
     /**
      * Initialize the model with input stream definition.
      *
-     * @param noOfAttributes number of feature attributes
+     * @param noOfDimensions number of feature attributes
      * @param noOfClusters    number of classes
      */
-    public synchronized void init(int noOfAttributes, int noOfClusters) {
+    public synchronized void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Model [%s] is being initialized.", this.modelName));
         }
-        this.noOfDimensions = noOfAttributes;
+        this.noOfDimensions = noOfDimensions;
         this.noOfClusters = noOfClusters;
         this.streamHeader = createMOAInstanceHeader(this.noOfDimensions);
         this.clusTree = new ClusTree();
         this.clusTree.setModelContext(streamHeader);
+        this.clusTree.maxHeightOption.setValue(maxHeightOfTree);
+        this.clusTree.horizonOption.setValue(horizon);
         this.clusTree.prepareForUse();
     }
 

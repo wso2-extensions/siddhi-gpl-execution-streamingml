@@ -18,7 +18,6 @@
 package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util;
 
 import org.apache.log4j.Logger;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -116,7 +115,16 @@ public class KMeansModel implements Serializable {
         return s.toString();
     }
 
-    public void refresh(LinkedList<DataPoint> dataPointsArray) {
-        this.clusterList = WeightedKMeans.run(dataPointsArray);
+    public void refresh(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
+                        int noOfDimensions) {
+        this.setClusterList(WeightedKMeans.getInstance().run(dataPointsArray, noOfClusters, maxIterations,
+                noOfDimensions));
+        this.trained = true;
+    }
+
+    public Object[] getPrediction(double[] coordinateValuesOfCurrentDataPoint) {
+        DataPoint d = new DataPoint();
+        d.setCoordinates(coordinateValuesOfCurrentDataPoint);
+        return WeightedKMeans.getInstance().getAssociatedCentroidInfo(d, this);
     }
 }

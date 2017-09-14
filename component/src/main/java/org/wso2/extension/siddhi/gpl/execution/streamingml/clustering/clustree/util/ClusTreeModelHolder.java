@@ -49,10 +49,12 @@ public class ClusTreeModelHolder {
         this.clusTreeModelMap = kMeansModelMap;
     }
 
-    public ClusTreeModel getClusTreeModel(String microModelName) {
+    public ClusTreeModel getClusTreeModel(String microModelName, int noOfDimensions, int noOfClusters,
+                                          int maxHeightOfTree, int horizon) {
         ClusTreeModel model = clusTreeModelMap.get(microModelName);
         if (model == null) {
             model = new ClusTreeModel(microModelName);
+            model.init(noOfDimensions, noOfClusters, maxHeightOfTree, horizon);
             this.addClusTreeModel(microModelName, model);
             if (logger.isDebugEnabled()) {
                 logger.debug("New model is created with name " + microModelName);

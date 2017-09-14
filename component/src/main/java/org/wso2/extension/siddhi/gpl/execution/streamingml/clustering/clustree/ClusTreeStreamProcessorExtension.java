@@ -20,7 +20,13 @@ package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.ClusTreeModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.ClusTreeModelHolder;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.DataPoint;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.KMeansModel;
+import org.wso2.siddhi.annotation.Example;
+import org.wso2.siddhi.annotation.Extension;
+import org.wso2.siddhi.annotation.Parameter;
+import org.wso2.siddhi.annotation.ReturnAttribute;
+import org.wso2.siddhi.annotation.util.DataType;
 import org.wso2.siddhi.core.config.SiddhiAppContext;
 import org.wso2.siddhi.core.event.ComplexEventChunk;
 import org.wso2.siddhi.core.event.stream.StreamEvent;
@@ -35,14 +41,72 @@ import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
 import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
-
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * performs clustree with batch update to kmeans model
  */
+@Extension(
+        name = "ClusTree",
+        namespace = "streamingml",
+        description = "dfhgdg",
+        parameters = {
+                @Parameter(
+                        name = "model.name",
+                        description = "The name for the model that is going to be created/reused for prediction",
+                        type = {DataType.STRING}
+                ),
+                @Parameter(
+                        name = "no.of.clusters",
+                        description = "The assumed number of natural clusters (numberOfClusters) in the data set.",
+                        type = {DataType.INT}
+                ),
+                @Parameter(
+                        name = "max.iterations",
+                        description = "Number of iterations, the process iterates until the number of maximum " +
+                                "iterations is reached or the centroids do not change",
+                        type = {DataType.INT}
+                ),
+                @Parameter(
+                        name = "no.of.events.to.retrain",
+                        description = "number of events to recalculate cluster centers. ",
+                        type = DataType.INT
+                ),
+                @Parameter(
+                        name = "model.features",
+                        description = "This is a variable length argument. Depending on the dimensionality of " +
+                                "data points we will receive coordinates as features along each axis.",
+                        type = {DataType.DOUBLE, DataType.FLOAT, DataType.INT, DataType.LONG}
+                )
+
+        },
+        returnAttributes = {
+                @ReturnAttribute(
+                        name = "euclideanDistanceToClosestCentroid",
+                        description = "Represents the Euclidean distance between the current data point and the " +
+                                "closest centroid.",
+                        type = {DataType.DOUBLE}
+                ),
+                @ReturnAttribute(
+                        name = "closestCentroidCoordinate",
+                        description = "This is a variable length attribute. Depending on the dimensionality(d) " +
+                                "we will return closestCentroidCoordinate1 to closestCentroidCoordinated which are " +
+                                "the d dimensional coordinates of the closest centroid from the model to the " +
+                                "current event. This is the prediction result and this represents the cluster to" +
+                                "which the current event belongs to.",
+                        type = {DataType.DOUBLE}
+                )
+        },
+        examples = {
+                @Example(
+                        syntax = "fgdf",
+                        description = "dsfgdfg"
+                ),
+        }
+)
 public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     private String microModelName;
     private int noOfClusters;
@@ -50,11 +114,13 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     private int maxHeightOfTree;
     private int horizon;
     private int noOfDimensions;
+    private int maxIterations;
     private double[] coordinateValuesOfCurrentDataPoint;
     private int noOfEventsReceived;
+    private LinkedList<DataPoint> dpa;
     private ClusTreeModel clusTreeModel;
     private KMeansModel kMeansModel;
-    private final int NO_OF_CONSTANT_PARAMETERS = 6;
+    private final int noOfConstantParameters = 6;
     private static final Logger logger = Logger.getLogger(ClusTreeStreamProcessorExtension.class.getName());
 
 
@@ -96,7 +162,6 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
             throw new SiddhiAppCreationException("Maximum iterations has to be a constant but found " +
                     this.attributeExpressionExecutors[2].getClass().getCanonicalName());
         }
-        int maxIterations;
         if (attributeExpressionExecutors[2].getReturnType() == Attribute.Type.INT) {
             maxIterations = (Integer) ((ConstantExpressionExecutor)
                     attributeExpressionExecutors[2]).getValue();
@@ -134,7 +199,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
         if (attributeExpressionExecutors[4].getReturnType() == Attribute.Type.INT) {
             maxHeightOfTree = (Integer) ((ConstantExpressionExecutor)
                     attributeExpressionExecutors[4]).getValue();
-            if (maxHeightOfTree < (Math.log(noOfClusters)/Math.log(3)) - 1) {
+            if (maxHeightOfTree < (Math.log(noOfClusters) / Math.log(3)) - 1) {
                 throw new SiddhiAppCreationException("noOfEventsToRefreshMacroModel should be a positive integer " +
                         "but found " + maxHeightOfTree);
             }
@@ -160,11 +225,11 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                     attributeExpressionExecutors[5].getReturnType());
         }
 
-        noOfDimensions = attributeExpressionExecutors.length - NO_OF_CONSTANT_PARAMETERS;
+        noOfDimensions = attributeExpressionExecutors.length - noOfConstantParameters;
         coordinateValuesOfCurrentDataPoint = new double[noOfDimensions];
 
         //validating all the attributes to be variables
-        for (int i = NO_OF_CONSTANT_PARAMETERS; i < NO_OF_CONSTANT_PARAMETERS + noOfDimensions; i++) {
+        for (int i = noOfConstantParameters; i < noOfConstantParameters + noOfDimensions; i++) {
             if (!(this.attributeExpressionExecutors[i] instanceof VariableExpressionExecutor)) {
                 throw new SiddhiAppCreationException("The attributes should be variable but found a " +
                         this.attributeExpressionExecutors[i].getClass().getCanonicalName());
@@ -176,7 +241,9 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
             logger.debug("model name is " + microModelName);
         }
 
-        clusTreeModel = ClusTreeModelHolder.getInstance().getClusTreeModel(microModelName);
+        clusTreeModel = ClusTreeModelHolder.getInstance().getClusTreeModel(microModelName, noOfDimensions,
+                noOfClusters, maxHeightOfTree, horizon);
+        kMeansModel = new KMeansModel();
 
 
         List<Attribute> attributeList = new ArrayList<>(1 + noOfDimensions);
@@ -197,10 +264,10 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 noOfEventsReceived++;
 
                 //validating and getting coordinate values
-                for (int i = NO_OF_CONSTANT_PARAMETERS; i < NO_OF_CONSTANT_PARAMETERS + noOfDimensions; i++) {
+                for (int i = noOfConstantParameters; i < noOfConstantParameters + noOfDimensions; i++) {
                     try {
                         Number content = (Number) attributeExpressionExecutors[i].execute(streamEvent);
-                        coordinateValuesOfCurrentDataPoint[i - NO_OF_CONSTANT_PARAMETERS] = content.doubleValue();
+                        coordinateValuesOfCurrentDataPoint[i - noOfConstantParameters] = content.doubleValue();
                     } catch (ClassCastException e) {
                         throw new SiddhiAppCreationException("coordinate values should be int/float/double/long " +
                                 "but found " +
@@ -211,22 +278,24 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 //train the ClusTree Model with the datapoint
                 clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint, null);
 
+                //train the model periodically
+                if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
+                    dpa = clusTreeModel.getMicroClusteringAsDPArray();
+                    kMeansModel.refresh(dpa, noOfClusters, maxIterations,
+                            noOfDimensions);
+                }
+
                 //make prediction if the model is trained
                 if (kMeansModel.isTrained()) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Populating output");
                     }
-//                    complexEventPopulater.populateComplexEvent(streamEvent,
-//                            kMeansModel.getPrediction(coordinateValuesOfCurrentDataPoint));
-                }
-
-                //train the model periodically
-                if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
-                    kMeansModel.refresh(clusTreeModel.getMicroClusteringAsDPArray());
+                    complexEventPopulater.populateComplexEvent(streamEvent,
+                            kMeansModel.getPrediction(coordinateValuesOfCurrentDataPoint));
                 }
             }
         }
-
+        nextProcessor.process(complexEventChunk);
     }
 
     @Override

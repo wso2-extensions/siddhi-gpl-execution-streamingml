@@ -19,14 +19,16 @@ package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.
 
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
- * perform weighted kmeans calculations
+ * perform weighted kmeans calculations. a singleton class
  */
 public class WeightedKMeans {
+    private static final WeightedKMeans instance = new WeightedKMeans();
     private int noOfClusters;
     private int maximumIterations;
     private boolean isInitialTrained = false;
@@ -34,18 +36,20 @@ public class WeightedKMeans {
     private int noOfDimensions;
     private static final Logger logger = Logger.getLogger(WeightedKMeans.class.getName());
 
-    public static List<Cluster> run(LinkedList<DataPoint> dataPointsArray) {
+    public static WeightedKMeans getInstance() {
+        return instance;
+    }
+
+    public List<Cluster> run(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maximumIterations,
+                             int noOfDimensions) {
         KMeansModel model = new KMeansModel();
-//        this.noOfClusters = numberOfClusters;
-//        this.maximumIterations = maximumIterations;
-//        this.noOfDimensions = noOfDimensions;
+        this.noOfClusters = noOfClusters;
+        this.maximumIterations = maximumIterations;
+        this.noOfDimensions = noOfDimensions;
+        this.cluster(dataPointsArray, model);
+        return model.getClusterList();
     }
 
-    public WeightedKMeans(int numberOfClusters, int maximumIterations, String modelName, String siddhiAppName,
-                     int noOfDimensions) {
-        //model = new KMeansModel();
-
-    }
 
     /**
      * Perform clustering
@@ -71,7 +75,8 @@ public class WeightedKMeans {
 
                 centroidShifted = !model.getClusterList().equals(newClusterList);
                 if (logger.isDebugEnabled()) {
-                    logger.debug("previous model : " + printClusterList(model.getClusterList()) + "\nnew model : " +
+                    logger.debug("previous model : " + printClusterList(model.getClusterList()) +
+                            "\nnew model : " +
                             printClusterList(newClusterList) + "\ncentroid shifted?" + centroidShifted);
                 }
                 if (!centroidShifted) {
@@ -172,5 +177,28 @@ public class WeightedKMeans {
             }
         }
         return associatedCluster;
+    }
+
+    /**
+     * similar to findAssociatedCluster method but return an Object[] array with the distance
+     * to closest centroid and the coordinates of the closest centroid
+     *
+     * @param currentDatapoint the input dataPoint for which the closest centroid needs to be found
+     * @return an Object[] array as mentioned above
+     */
+    public Object[] getAssociatedCentroidInfo(DataPoint currentDatapoint, KMeansModel model) {
+        Cluster associatedCluster = findAssociatedCluster(currentDatapoint, model);
+        double minDistance = MathUtil.euclideanDistance(currentDatapoint.getCoordinates(),
+                associatedCluster.getCentroid().getCoordinates());
+        List<Double> associatedCentroidInfoList = new ArrayList<Double>();
+        associatedCentroidInfoList.add(minDistance);
+
+        for (double x : associatedCluster.getCentroid().getCoordinates()) {
+            associatedCentroidInfoList.add(x);
+        }
+
+        Object[] associatedCentroidInfo = new Object[associatedCentroidInfoList.size()];
+        associatedCentroidInfoList.toArray(associatedCentroidInfo);
+        return associatedCentroidInfo;
     }
 }
