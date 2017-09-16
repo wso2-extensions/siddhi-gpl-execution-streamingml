@@ -126,23 +126,27 @@ public class WeightedKMeans {
      */
     private List<Cluster> calculateNewClusters(KMeansModel model) {
         List<Cluster> newClusterList = new LinkedList<>();
-
+        double[] totalOfCoordinates = new double[noOfDimensions];
+        double totalWeight;
         for (Cluster c: model.getClusterList()) {
-            double[] total;
-            total = new double[noOfDimensions];
+            //clear the array
+            for (int j = 0; j < noOfDimensions; j++) {
+                totalOfCoordinates[j] = 0;
+            }
+            totalWeight = 0;
             for (DataPoint d: c.getDataPointsInCluster()) {
                 double[] coordinatesOfd = d.getCoordinates();
+                totalWeight += d.getWeight();
                 for (int i = 0; i < noOfDimensions; i++) {
-                    total[i] += coordinatesOfd[i];
+                    totalOfCoordinates[i] += (coordinatesOfd[i] * d.getWeight());
                 }
             }
-            int numberOfMembers = c.getDataPointsInCluster().size();
             for (int i = 0; i < noOfDimensions; i++) {
-                total[i] = Math.round((total[i] / numberOfMembers) * 10000.0) / 10000.0;
+                totalOfCoordinates[i] = Math.round((totalOfCoordinates[i] / totalWeight) * 10000.0) / 10000.0;
             }
 
             DataPoint d1 = new DataPoint();
-            d1.setCoordinates(total);
+            d1.setCoordinates(totalOfCoordinates);
             Cluster c1 = new Cluster(d1);
             newClusterList.add(c1);
         }

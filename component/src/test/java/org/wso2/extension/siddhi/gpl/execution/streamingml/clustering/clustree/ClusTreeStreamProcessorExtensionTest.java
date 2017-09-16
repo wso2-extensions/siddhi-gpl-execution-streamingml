@@ -27,6 +27,10 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.SiddhiTestHelper;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -114,7 +118,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         }
     }
 
-    /*@Test
+    @Test
     public void testClusTree_1() throws Exception {
         logger.info("ClusTreeStreamProcessorExtension Test - standard dataset at " +
                 "https://archive.ics.uci.edu/ml/datasets/3D+Road+Network+%28North+Jutland%2C+Denmark%29");
@@ -122,13 +126,18 @@ public class ClusTreeStreamProcessorExtensionTest {
         String inputStream = "define stream InputStream (x1 double, x2 double, x3 double, x4 double);";
 
         String query = (
-                "@info(name = 'query1') " +
+                "@info(name = 'query2') " +
                         "from InputStream#streamingml:ClusTree('model1', 2, 10, 434873, 10, 1000000, x1, x2, x3, x4) " +
                         "select closestCentroidCoordinate1, closestCentroidCoordinate2, " +
                         "closestCentroidCoordinate3, closestCentroidCoordinate4 " +
                         "insert into OutputStream;");
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
-
+        siddhiAppRuntime.addCallback("query2", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
         Scanner scanner = null;
         siddhiAppRuntime.start();
         InputHandler inputHandler = siddhiAppRuntime.getInputHandler("InputStream");
@@ -151,5 +160,5 @@ public class ClusTreeStreamProcessorExtensionTest {
         } finally {
             siddhiAppRuntime.shutdown();
         }
-    }*/
+    }
 }
