@@ -28,25 +28,12 @@ import java.util.List;
  * perform weighted kmeans calculations. a singleton class
  */
 public class WeightedKMeans {
-    private static final WeightedKMeans instance = new WeightedKMeans();
-    private int noOfClusters;
-    private int maximumIterations;
-    private boolean isInitialTrained = false;
-    //private KMeansModel model;
-    private int noOfDimensions;
     private static final Logger logger = Logger.getLogger(WeightedKMeans.class.getName());
 
-    public static WeightedKMeans getInstance() {
-        return instance;
-    }
-
-    public List<Cluster> run(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maximumIterations,
+    public static List<Cluster> run(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maximumIterations,
                              int noOfDimensions) {
         KMeansModel model = new KMeansModel();
-        this.noOfClusters = noOfClusters;
-        this.maximumIterations = maximumIterations;
-        this.noOfDimensions = noOfDimensions;
-        this.cluster(dataPointsArray, model);
+        cluster(dataPointsArray, model, noOfClusters, maximumIterations, noOfDimensions);
         return model.getClusterList();
     }
 
@@ -54,11 +41,12 @@ public class WeightedKMeans {
     /**
      * Perform clustering
      */
-    public void cluster(List<DataPoint> dataPointsArray, KMeansModel model) {
+    private static void cluster(List<DataPoint> dataPointsArray, KMeansModel model, int noOfClusters, int maximumIterations,
+                                int noOfDimensions) {
         if (logger.isDebugEnabled()) {
             logger.debug("initial Clustering");
         }
-        buildModel(dataPointsArray, model);
+        buildModel(dataPointsArray, model, noOfClusters);
 
         int iter = 0;
         if (dataPointsArray.size() != 0 && (model.size() == noOfClusters)) {
@@ -71,14 +59,9 @@ public class WeightedKMeans {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Current model : \n" + model.getModelInfo());
                 }
-                List<Cluster> newClusterList = calculateNewClusters(model);
+                List<Cluster> newClusterList = calculateNewClusters(model, noOfDimensions);
 
                 centroidShifted = !model.getClusterList().equals(newClusterList);
-                if (logger.isDebugEnabled()) {
-                    logger.debug("previous model : " + printClusterList(model.getClusterList()) +
-                            "\nnew model : " +
-                            printClusterList(newClusterList) + "\ncentroid shifted?" + centroidShifted);
-                }
                 if (!centroidShifted) {
                     break;
                 }
@@ -88,7 +71,7 @@ public class WeightedKMeans {
         }
     }
 
-    private void buildModel(List<DataPoint> dataPointsArray, KMeansModel model) {
+    private static void buildModel(List<DataPoint> dataPointsArray, KMeansModel model, int noOfClusters) {
         int distinctCount = model.size();
         for (DataPoint currentDataPoint : dataPointsArray) {
             if (distinctCount >= noOfClusters) {
@@ -107,7 +90,7 @@ public class WeightedKMeans {
      * finds the nearest centroid to each data point in the input array
      * @param dataPointsArray arraylist containing datapoints for which we need to assign centroids
      */
-    private void assignToCluster(List<DataPoint> dataPointsArray, KMeansModel model) {
+    private static void assignToCluster(List<DataPoint> dataPointsArray, KMeansModel model) {
         logger.debug("Running function assignToCluster");
         model.clearClusterMembers();
         for (DataPoint currentDataPoint : dataPointsArray) {
@@ -124,7 +107,7 @@ public class WeightedKMeans {
      *
      * @return returns an array list of coordinate objects each representing a centroid
      */
-    private List<Cluster> calculateNewClusters(KMeansModel model) {
+    private static List<Cluster> calculateNewClusters(KMeansModel model, int noOfDimensions) {
         List<Cluster> newClusterList = new LinkedList<>();
         double[] totalOfCoordinates = new double[noOfDimensions];
         double totalWeight;
@@ -142,7 +125,7 @@ public class WeightedKMeans {
                 }
             }
             for (int i = 0; i < noOfDimensions; i++) {
-                totalOfCoordinates[i] = Math.round((totalOfCoordinates[i] / totalWeight) * 10000.0) / 10000.0;
+                totalOfCoordinates[i] = MathUtil.roundOff(totalOfCoordinates[i] / totalWeight, 4);
             }
 
             DataPoint d1 = new DataPoint();
@@ -153,21 +136,13 @@ public class WeightedKMeans {
         return newClusterList;
     }
 
-    public String printClusterList(List<Cluster> clusterList) {
-        StringBuilder s = new StringBuilder();
-        for (Cluster c: clusterList) {
-            s.append(Arrays.toString(c.getCentroid().getCoordinates()));
-        }
-        return s.toString();
-    }
-
     /**
      * finds the nearest centroid to a given DataPoint
      *
      * @param currentDatapoint input DataPoint to which we need to find nearest centroid
      * @return centroid - the nearest centroid to the input DataPoint
      */
-    private Cluster findAssociatedCluster(DataPoint currentDatapoint, KMeansModel model) {
+    private static Cluster findAssociatedCluster(DataPoint currentDatapoint, KMeansModel model) {
         double minDistance = MathUtil.euclideanDistance(model.getCoordinatesOfCentroidOfCluster(0),
                 currentDatapoint.getCoordinates());
         Cluster associatedCluster = model.getClusterList().get(0);
@@ -190,7 +165,7 @@ public class WeightedKMeans {
      * @param currentDatapoint the input dataPoint for which the closest centroid needs to be found
      * @return an Object[] array as mentioned above
      */
-    public Object[] getAssociatedCentroidInfo(DataPoint currentDatapoint, KMeansModel model) {
+    public static Object[] getAssociatedCentroidInfo(DataPoint currentDatapoint, KMeansModel model) {
         Cluster associatedCluster = findAssociatedCluster(currentDatapoint, model);
         double minDistance = MathUtil.euclideanDistance(currentDatapoint.getCoordinates(),
                 associatedCluster.getCentroid().getCoordinates());

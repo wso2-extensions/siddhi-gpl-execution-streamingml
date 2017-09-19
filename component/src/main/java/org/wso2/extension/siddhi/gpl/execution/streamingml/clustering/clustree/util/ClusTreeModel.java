@@ -38,19 +38,16 @@ import java.util.LinkedList;
 public class ClusTreeModel  extends AbstractOptionHandler {
     private static final long serialVersionUID = -7485124336894867529L;
     private static final Logger logger = Logger.getLogger(ClusTreeModel.class);
-    private String modelName;
     private InstancesHeader streamHeader;
     private int noOfDimensions;
     private int noOfClusters;
     private ClusTree clusTree;
 
-    public ClusTreeModel(String modelName) {
-        this.modelName = modelName;
+    public ClusTreeModel() {
     }
 
     public ClusTreeModel(ClusTreeModel model) {
         this.clusTree = model.clusTree;
-        this.modelName = model.modelName;
         this.streamHeader = model.streamHeader;
         this.noOfDimensions = model.noOfDimensions;
         this.noOfClusters = model.noOfClusters;
@@ -63,9 +60,6 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param noOfClusters    number of classes
      */
     public synchronized void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Model [%s] is being initialized.", this.modelName));
-        }
         this.noOfDimensions = noOfDimensions;
         this.noOfClusters = noOfClusters;
         this.streamHeader = createMOAInstanceHeader(this.noOfDimensions);
@@ -115,7 +109,7 @@ public class ClusTreeModel  extends AbstractOptionHandler {
         }
         InstancesHeader streamHeader = new InstancesHeader(new Instances
                 (this.getCLICreationString(InstanceStream.class), headerAttributes, 0));
-        streamHeader.setClassIndex(streamHeader.numAttributes());
+        streamHeader.setClassIndex(streamHeader.numAttributes()); //todo: class label dsnt exist
         return streamHeader;
     }
 

@@ -19,9 +19,10 @@ package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree;
 
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.ClusTreeModel;
-import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.ClusTreeModelHolder;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.DataPoint;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.KMeansModel;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.Trainer;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
@@ -33,6 +34,7 @@ import org.wso2.siddhi.core.event.stream.StreamEvent;
 import org.wso2.siddhi.core.event.stream.StreamEventCloner;
 import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
+import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
 import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
 import org.wso2.siddhi.core.executor.ExpressionExecutor;
 import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
@@ -42,15 +44,18 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * performs clustree with batch update of kmeans model using ClusTree model
  */
 @Extension(
-        name = "ClusTree",
+        name = "clusTree",
         namespace = "streamingml",
         description = "Performs clustering on a streaming data set. Initially a micro cluster model is generated " +
                 "using  ClusTree algorithm and weighted k-means is applied on micro clusters periodically to " +
@@ -59,17 +64,12 @@ import java.util.Map;
                 "is taken as the distance metric. ",
         parameters = {
                 @Parameter(
-                        name = "model.name",
-                        description = "The name for the model that is going to be created/reused for prediction",
-                        type = {DataType.STRING}
-                ),
-                @Parameter(
                         name = "no.of.clusters",
                         description = "The assumed number of natural clusters (numberOfClusters) in the data set.",
                         type = {DataType.INT}
                 ),
                 @Parameter(
-                        name = "max.iterations",
+                        name = "max.iterations", //todo: add optional field and value
                         description = "Number of iterations, the process iterates until the number of maximum " +
                                 "iterations is reached or the centroids do not change",
                         type = {DataType.INT}
@@ -125,174 +125,161 @@ import java.util.Map;
                         syntax = "@App:name('ClusTreeTestSiddhiApp') \n" +
                                 "define stream InputStream (x double, y double);\n" +
                                 "@info(name = 'query1') \n" +
-                                "from InputStream#streamingml:ClusTree('model0', 2, 10, 20, 5, 50, x, y) \n" +
+                                "from InputStream#streamingml:ClusTree(2, 10, 20, 5, 50, x, y) \n" +
                                 "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y \n" +
                                 "insert into OutputStream;",
                         description = "This query will create a Siddhi app named ClusTreeTestSiddhiApp and will " +
                                 "accept 2D inputs od doubles. The query which is named query1 will create a ClusTree " +
-                                "model named model0 and will create a kmeans model after firsat 20 events and will " +
+                                "model and will create a kmeans model after firsat 20 events and will " +
                                 "refresh it every 20 events after. Number of macro clusters will be 2 and the " +
                                 "maximum iterations of kmeans to converge will be 10. The max height of tree is " +
                                 "set to 5 so at maximum we will get 3^5 micro clusters from ClusTree and the " +
                                 "horizon is set as 50, so after 50 events micro clusters that were not updated " +
-                                "will lose their weight by half."
+                                "will lose their weight by half." //todo: add eg with default params
                 ),
         }
 )
 public class ClusTreeStreamProcessorExtension extends StreamProcessor {
+    private final int minConstantParams = 1;
+    private final int maxConstantParams = 5;
+    private final int separateThreadThreshold = 100;
     private int noOfClusters;
-    private int noOfEventsToRefreshMacroModel;
+    private int noOfEventsToRefreshMacroModel = 20; //todo : tune. check algo defaults
     private int noOfDimensions;
-    private int maxHeightOfTree;
-    private int maxIterations;
-    private int horizon;
+    private int maxIterations = 10;
     private double[] coordinateValuesOfCurrentDataPoint;
     private int noOfEventsReceived;
+    private ExecutorService executorService;
     private ClusTreeModel clusTreeModel;
     private KMeansModel kMeansModel;
-    private int attributeStartIndex;
+    private List<VariableExpressionExecutor> featureVariableExpressionExecutors = new LinkedList<>();
     private static final Logger logger = Logger.getLogger(ClusTreeStreamProcessorExtension.class.getName());
-
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
                                    ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+        int noOfFeatures = inputDefinition.getAttributeList().size();
+        if (attributeExpressionLength < minConstantParams || attributeExpressionLength > maxConstantParams +
+                noOfFeatures) {
+            throw new SiddhiAppCreationException("Invalid number of parameters. User can either choose to give " +
+                    "all 4 hyper parameters or none at all. So query can have " + (minConstantParams + noOfFeatures)
+                    + " or " + (maxConstantParams + noOfFeatures) + " but found " + attributeExpressionLength +
+                    " parameters.");
+        }
 
-        //expressionExecutors[0] --> microModelName
+        //expressionExecutors[0] --> numberOfClusters
         if (!(attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor)) {
-            throw new SiddhiAppCreationException("microModelName has to be a constant but found " +
+            throw new SiddhiAppCreationException("noOfClusters has to be a constant but found " +
                     this.attributeExpressionExecutors[0].getClass().getCanonicalName());
         }
-
-        String microModelName;
-        if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.STRING) {
-            microModelName = (String) ((ConstantExpressionExecutor) attributeExpressionExecutors[0]).getValue();
-        } else {
-            throw new SiddhiAppCreationException("microModelName should be of type String but found " +
-                    attributeExpressionExecutors[0].getReturnType());
-        }
-
-        //expressionExecutors[1] --> numberOfClusters
-        if (!(attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor)) {
-            throw new SiddhiAppCreationException("noOfClusters has to be a constant but found " +
-                    this.attributeExpressionExecutors[2].getClass().getCanonicalName());
-        }
-        if (attributeExpressionExecutors[1].getReturnType() == Attribute.Type.INT) {
-            noOfClusters = (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[1]).getValue();
+        if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.INT) {
+            noOfClusters = (Integer) ((ConstantExpressionExecutor) attributeExpressionExecutors[0]).getValue();
             if (noOfClusters <= 0) {
                 throw new SiddhiAppCreationException("noOfClusters should be a positive integer " +
                         "but found " + noOfClusters);
             }
         } else {
             throw new SiddhiAppCreationException("noOfClusters should be of type int but found " +
-                    attributeExpressionExecutors[1].getReturnType());
+                    attributeExpressionExecutors[0].getReturnType());
         }
 
-        if (attributeExpressionExecutors[2] instanceof VariableExpressionExecutor) {
-            attributeStartIndex = 2;
-            //default values
-            maxIterations = 10;
-            noOfEventsToRefreshMacroModel = 1000;
-            maxHeightOfTree = 8;
-            horizon = 1000;
+        int maxHeightOfTree = 8; //todo : tune. check algo defaults
+        int horizon = 50;
+        int attributeStartIndex;
+        if (attributeExpressionExecutors[1] instanceof VariableExpressionExecutor &&
+                attributeExpressionLength == minConstantParams + noOfFeatures) {
+            attributeStartIndex = 1;
         } else {
-            attributeStartIndex = 6;
-            //expressionExecutors[2] --> maxIterations
-            if (!(attributeExpressionExecutors[2] instanceof ConstantExpressionExecutor)) {
+            attributeStartIndex = 5;
+            //expressionExecutors[1] --> maxIterations
+            if (!(attributeExpressionExecutors[1] instanceof ConstantExpressionExecutor)) {
                 throw new SiddhiAppCreationException("Maximum iterations has to be a constant but found " +
-                        this.attributeExpressionExecutors[2].getClass().getCanonicalName());
+                        this.attributeExpressionExecutors[1].getClass().getCanonicalName());
             }
-            if (attributeExpressionExecutors[2].getReturnType() == Attribute.Type.INT) {
+            if (attributeExpressionExecutors[1].getReturnType() == Attribute.Type.INT) {
                 maxIterations = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[2]).getValue();
+                        attributeExpressionExecutors[1]).getValue();
                 if (maxIterations <= 0) {
                     throw new SiddhiAppCreationException("maxIterations should be a positive integer " +
                             "but found " + maxIterations);
                 }
             } else {
                 throw new SiddhiAppCreationException("Maximum iterations should be of type int but found " +
-                        attributeExpressionExecutors[2].getReturnType());
+                        attributeExpressionExecutors[1].getReturnType());
             }
 
-            //expressionExecutors[3] --> noOfEventsToRefreshMacroModel
-            if (!(attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor)) {
+            //expressionExecutors[2] --> noOfEventsToRefreshMacroModel
+            if (!(attributeExpressionExecutors[2] instanceof ConstantExpressionExecutor)) {
                 throw new SiddhiAppCreationException("noOfEventsToRefreshMacroModel has to be a constant but found " +
-                        this.attributeExpressionExecutors[3].getClass().getCanonicalName());
+                        this.attributeExpressionExecutors[2].getClass().getCanonicalName());
             }
-            if (attributeExpressionExecutors[3].getReturnType() == Attribute.Type.INT) {
+            if (attributeExpressionExecutors[2].getReturnType() == Attribute.Type.INT) {
                 noOfEventsToRefreshMacroModel = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[3]).getValue();
+                        attributeExpressionExecutors[2]).getValue();
                 if (noOfEventsToRefreshMacroModel <= 0) {
                     throw new SiddhiAppCreationException("noOfEventsToRefreshMacroModel should be a positive integer " +
                             "but found " + noOfEventsToRefreshMacroModel);
                 }
             } else {
                 throw new SiddhiAppCreationException("noOfEventsToRefreshMacroModel should be of type int but found " +
-                        attributeExpressionExecutors[3].getReturnType());
+                        attributeExpressionExecutors[2].getReturnType());
             }
 
-            //expressionExecutors[4] --> maxHeightOfTree
-            if (!(attributeExpressionExecutors[4] instanceof ConstantExpressionExecutor)) {
+            //expressionExecutors[3] --> maxHeightOfTree
+            if (!(attributeExpressionExecutors[3] instanceof ConstantExpressionExecutor)) {
                 throw new SiddhiAppCreationException("maxHeightOfTree has to be a constant but found " +
-                        this.attributeExpressionExecutors[4].getClass().getCanonicalName());
+                        this.attributeExpressionExecutors[3].getClass().getCanonicalName());
             }
 
-            if (attributeExpressionExecutors[4].getReturnType() == Attribute.Type.INT) {
+            if (attributeExpressionExecutors[3].getReturnType() == Attribute.Type.INT) {
                 maxHeightOfTree = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[4]).getValue();
-                if (maxHeightOfTree < (Math.log(noOfClusters) / Math.log(3))) {
-                    throw new SiddhiAppCreationException("maxHeightOfTree should be a greater than " +
-                            "(Math.log(noOfClusters) / Math.log(3) but found " + maxHeightOfTree);
+                        attributeExpressionExecutors[3]).getValue();
+                double minHeightOfTree = (Math.log(noOfClusters) / Math.log(3));
+                if (maxHeightOfTree < minHeightOfTree) {
+                    throw new SiddhiAppCreationException("maxHeightOfTree should be an int greater than " +
+                            minHeightOfTree + " but found " + maxHeightOfTree);
                 }
             } else {
                 throw new SiddhiAppCreationException("maxHeightOfTree should be of type int but found " +
-                        attributeExpressionExecutors[4].getReturnType());
+                        attributeExpressionExecutors[3].getReturnType());
             }
             maxHeightOfTree -= 1; // since this parameter when set to 0 MOA ClusTree implementation builds one root
             // and 3 children. i.e one level
 
-            //expressionExecutors[5] --> horizon
-            if (!(attributeExpressionExecutors[5] instanceof ConstantExpressionExecutor)) {
+            //expressionExecutors[4] --> horizon
+            if (!(attributeExpressionExecutors[4] instanceof ConstantExpressionExecutor)) {
                 throw new SiddhiAppCreationException("horizon has to be a constant but found " +
-                        this.attributeExpressionExecutors[5].getClass().getCanonicalName());
+                        this.attributeExpressionExecutors[4].getClass().getCanonicalName());
             }
 
-            if (attributeExpressionExecutors[5].getReturnType() == Attribute.Type.INT) {
+            if (attributeExpressionExecutors[4].getReturnType() == Attribute.Type.INT) {
                 horizon = (Integer) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[5]).getValue();
+                        attributeExpressionExecutors[4]).getValue();
                 if (horizon <= 0) {
                     throw new SiddhiAppCreationException("horizon should be a positive integer " +
                             "but found " + horizon);
                 }
             } else {
                 throw new SiddhiAppCreationException("horizon should be of type int but found " +
-                        attributeExpressionExecutors[5].getReturnType());
+                        attributeExpressionExecutors[4].getReturnType());
             }
         }
-
-
 
         noOfDimensions = attributeExpressionExecutors.length - attributeStartIndex;
         coordinateValuesOfCurrentDataPoint = new double[noOfDimensions];
 
         //validating all the attributes to be variables
-        for (int i = attributeStartIndex; i < attributeStartIndex + noOfDimensions; i++) {
-            if (!(this.attributeExpressionExecutors[i] instanceof VariableExpressionExecutor)) {
-                throw new SiddhiAppCreationException("The attributes should be variable but found a " +
-                        this.attributeExpressionExecutors[i].getClass().getCanonicalName());
-            }
-        }
-        String siddhiAppName = siddhiAppContext.getName();
-        microModelName = microModelName + "." + siddhiAppName;
-        if (logger.isDebugEnabled()) {
-            logger.debug("model name is " + microModelName);
-        }
+        featureVariableExpressionExecutors = CoreUtils.extractAndValidateFeatures(inputDefinition,
+                attributeExpressionExecutors, attributeStartIndex, noOfDimensions);
 
-        clusTreeModel = ClusTreeModelHolder.getInstance().getClusTreeModel(microModelName, noOfDimensions,
-                noOfClusters, maxHeightOfTree, horizon);
+        //creating models
+        clusTreeModel = new ClusTreeModel();
+        clusTreeModel.init(noOfDimensions, noOfClusters, maxHeightOfTree, horizon);
         kMeansModel = new KMeansModel();
 
+        executorService = siddhiAppContext.getExecutorService();
 
+        //setting return attributes
         List<Attribute> attributeList = new ArrayList<>(1 + noOfDimensions);
         attributeList.add(new Attribute("euclideanDistanceToClosestCentroid", Attribute.Type.DOUBLE));
         for (int i = 1; i <= noOfDimensions; i++) {
@@ -304,21 +291,20 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     @Override
     protected void process(ComplexEventChunk<StreamEvent> complexEventChunk, Processor processor,
                            StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
-
         synchronized (this) {
             while (complexEventChunk.hasNext()) {
                 StreamEvent streamEvent = complexEventChunk.next();
                 noOfEventsReceived++;
 
                 //validating and getting coordinate values
-                for (int i = attributeStartIndex; i < attributeStartIndex + noOfDimensions; i++) {
+                for (int i = 0; i < noOfDimensions; i++) {
                     try {
-                        Number content = (Number) attributeExpressionExecutors[i].execute(streamEvent);
-                        coordinateValuesOfCurrentDataPoint[i - attributeStartIndex] = content.doubleValue();
+                        Number content = (Number) featureVariableExpressionExecutors.get(i).execute(streamEvent);
+                        coordinateValuesOfCurrentDataPoint[i] = content.doubleValue();
                     } catch (ClassCastException e) {
-                        throw new SiddhiAppCreationException("coordinate values should be int/float/double/long " +
+                        throw new SiddhiAppRuntimeException("coordinate values should be int/float/double/long " +
                                 "but found " +
-                                attributeExpressionExecutors[i].execute(streamEvent).getClass());
+                                featureVariableExpressionExecutors.get(i).execute(streamEvent).getClass());
                     }
                 }
 
@@ -328,8 +314,13 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 //train the model periodically
                 if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
                     LinkedList<DataPoint> dpa = clusTreeModel.getMicroClusteringAsDPArray();
-                    kMeansModel.refresh(dpa, noOfClusters, maxIterations,
-                            noOfDimensions);
+                    if (noOfEventsToRefreshMacroModel < separateThreadThreshold) {
+                        kMeansModel.refresh(dpa, noOfClusters, maxIterations,
+                                noOfDimensions);
+                    } else {
+                        Trainer trainer = new Trainer(kMeansModel, dpa, noOfClusters, maxIterations, noOfDimensions);
+                        Future f = executorService.submit(trainer);
+                    }
                 }
 
                 //make prediction if the model is trained
@@ -357,11 +348,22 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
 
     @Override
     public Map<String, Object> currentState() {
-        return null;
+        synchronized (this) {
+            Map<String, Object> map = new HashMap();
+            map.put("noOfEventsReceived", noOfEventsReceived);
+            map.put("clusTreeModel", clusTreeModel);
+            map.put("kMeansModel", kMeansModel);
+            return map;
+
+        }
     }
 
     @Override
     public void restoreState(Map<String, Object> map) {
-
+        synchronized (this) {
+            noOfEventsReceived = (Integer) map.get("noOfEventsReceived");
+            clusTreeModel = (ClusTreeModel) map.get("clusTreeModel");
+            kMeansModel = (KMeansModel) map.get("kMeansModel");
+        }
     }
 }

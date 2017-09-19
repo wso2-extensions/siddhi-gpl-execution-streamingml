@@ -48,7 +48,7 @@ public class KMeansModel implements Serializable {
         this.clusterList = clusterList;
     }
 
-    public boolean isTrained() {
+    public synchronized boolean isTrained() {
         return trained;
     }
 
@@ -115,16 +115,20 @@ public class KMeansModel implements Serializable {
         return s.toString();
     }
 
-    public void refresh(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
-                        int noOfDimensions) {
-        this.setClusterList(WeightedKMeans.getInstance().run(dataPointsArray, noOfClusters, maxIterations,
-                noOfDimensions));
-        this.trained = true;
+    public synchronized void setTrained(boolean trained) {
+        this.trained = trained;
     }
 
-    public Object[] getPrediction(double[] coordinateValuesOfCurrentDataPoint) {
+    public void refresh(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
+                        int noOfDimensions) {
+        this.setClusterList(WeightedKMeans.run(dataPointsArray, noOfClusters, maxIterations,
+                noOfDimensions));
+        this.setTrained(true);
+    }
+
+    public synchronized Object[] getPrediction(double[] coordinateValuesOfCurrentDataPoint) {
         DataPoint d = new DataPoint();
         d.setCoordinates(coordinateValuesOfCurrentDataPoint);
-        return WeightedKMeans.getInstance().getAssociatedCentroidInfo(d, this);
+        return WeightedKMeans.getAssociatedCentroidInfo(d, this);
     }
 }
