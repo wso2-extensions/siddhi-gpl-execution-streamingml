@@ -17,17 +17,12 @@
 
 package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util;
 
-import com.yahoo.labs.samoa.instances.Attribute;
 import com.yahoo.labs.samoa.instances.DenseInstance;
 import com.yahoo.labs.samoa.instances.Instance;
-import com.yahoo.labs.samoa.instances.Instances;
-import com.yahoo.labs.samoa.instances.InstancesHeader;
 import moa.cluster.Clustering;
 import moa.clusterers.clustree.ClusTree;
-import moa.core.FastVector;
 import moa.core.ObjectRepository;
 import moa.options.AbstractOptionHandler;
-import moa.streams.InstanceStream;
 import moa.tasks.TaskMonitor;
 import org.apache.log4j.Logger;
 import java.util.LinkedList;
@@ -38,7 +33,6 @@ import java.util.LinkedList;
 public class ClusTreeModel  extends AbstractOptionHandler {
     private static final long serialVersionUID = -7485124336894867529L;
     private static final Logger logger = Logger.getLogger(ClusTreeModel.class);
-    private InstancesHeader streamHeader;
     private int noOfDimensions;
     private int noOfClusters;
     private ClusTree clusTree;
@@ -48,7 +42,6 @@ public class ClusTreeModel  extends AbstractOptionHandler {
 
     public ClusTreeModel(ClusTreeModel model) {
         this.clusTree = model.clusTree;
-        this.streamHeader = model.streamHeader;
         this.noOfDimensions = model.noOfDimensions;
         this.noOfClusters = model.noOfClusters;
     }
@@ -62,9 +55,7 @@ public class ClusTreeModel  extends AbstractOptionHandler {
     public synchronized void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
         this.noOfDimensions = noOfDimensions;
         this.noOfClusters = noOfClusters;
-        this.streamHeader = createMOAInstanceHeader(this.noOfDimensions);
         this.clusTree = new ClusTree();
-        this.clusTree.setModelContext(streamHeader);
         this.clusTree.maxHeightOption.setValue(maxHeightOfTree);
         this.clusTree.horizonOption.setValue(horizon);
         this.clusTree.prepareForUse();
@@ -96,21 +87,7 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      */
     private synchronized Instance createMOAInstance(double[] cepEvent) {
         Instance instance = new DenseInstance(1.0D, cepEvent);
-        //set schema header for the instance
-        instance.setDataset(streamHeader);
         return instance;
-    }
-
-    private synchronized InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
-        FastVector headerAttributes = new FastVector();
-        for (int i = 0; i < numberOfAttributes - 1; i++) {
-            headerAttributes.addElement(
-                    new Attribute("att_" + i));
-        }
-        InstancesHeader streamHeader = new InstancesHeader(new Instances
-                (this.getCLICreationString(InstanceStream.class), headerAttributes, 0));
-        streamHeader.setClassIndex(streamHeader.numAttributes()); //todo: class label dsnt exist
-        return streamHeader;
     }
 
     public synchronized Clustering getMicroClustering() {

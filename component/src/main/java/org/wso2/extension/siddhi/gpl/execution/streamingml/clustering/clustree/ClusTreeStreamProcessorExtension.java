@@ -69,15 +69,19 @@ import java.util.concurrent.Future;
                         type = {DataType.INT}
                 ),
                 @Parameter(
-                        name = "max.iterations", //todo: add optional field and value
+                        name = "max.iterations",
                         description = "Number of iterations, the process iterates until the number of maximum " +
                                 "iterations is reached or the centroids do not change",
-                        type = {DataType.INT}
+                        type = {DataType.INT},
+                        optional = true,
+                        defaultValue = "40"
                 ),
                 @Parameter(
                         name = "no.of.events.to.refresh.macro.model",
                         description = "number of events to recalculate the k-means macro cluster centers. ",
-                        type = DataType.INT
+                        type = DataType.INT,
+                        optional = true,
+                        defaultValue = "100"
                 ),
                 @Parameter(
                         name = "max.height.of.tree",
@@ -85,7 +89,9 @@ import java.util.concurrent.Future;
                                 "there can be 3^10 micro clusters in the micro cluster model. Advisable to set " +
                                 "within 5-8 since having a lot of micro-clusters will consume lot of memory and will " +
                                 "take longer to build macro cluster model.",
-                        type = DataType.INT
+                        type = DataType.INT,
+                        optional = true,
+                        defaultValue = "8"
                 ),
                 @Parameter(
                         name = "horizon",
@@ -93,7 +99,9 @@ import java.util.concurrent.Future;
                                 "the concept drift. If horizon is set as 1000, then a micro cluster which hasn't " +
                                 "been updated recently will lose its weight by half after 1000 events. Horizon is " +
                                 "technically the half-life of micro-cluster weights.",
-                        type = DataType.INT
+                        type = DataType.INT,
+                        optional = true,
+                        defaultValue = "1000"
                 ),
                 @Parameter(
                         name = "model.features",
@@ -137,16 +145,27 @@ import java.util.concurrent.Future;
                                 "horizon is set as 50, so after 50 events micro clusters that were not updated " +
                                 "will lose their weight by half." //todo: add eg with default params
                 ),
+                @Example(
+                        syntax = "@App:name('ClusTreeTestSiddhiApp') \n" +
+                                "define stream InputStream (x double, y double);\n" +
+                                "@info(name = 'query1') \n" +
+                                "from InputStream#streamingml:ClusTree(2, x, y) \n" +
+                                "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y \n" +
+                                "insert into OutputStream;",
+                        description = "In this query one can note that the hyper parameters are not given. So they " +
+                                "will be set to their default values which are mentioned above. This mode of " +
+                                "querying is suggested for users who are not familier with ClusTree/KMeans algorithms."
+                )
         }
 )
 public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     private final int minConstantParams = 1;
     private final int maxConstantParams = 5;
-    private final int separateThreadThreshold = 100;
+    private final int separateThreadThreshold = 500;
     private int noOfClusters;
-    private int noOfEventsToRefreshMacroModel = 20; //todo : tune. check algo defaults
+    private int noOfEventsToRefreshMacroModel = 100; //todo : tune. check algo defaults
     private int noOfDimensions;
-    private int maxIterations = 10;
+    private int maxIterations = 40;
     private double[] coordinateValuesOfCurrentDataPoint;
     private int noOfEventsReceived;
     private ExecutorService executorService;
@@ -159,6 +178,9 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
                                    ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
         int noOfFeatures = inputDefinition.getAttributeList().size();
+        int maxHeightOfTree = 8; //todo : tune. check algo defaults
+        int horizon = 1000;
+        int attributeStartIndex;
         if (attributeExpressionLength < minConstantParams || attributeExpressionLength > maxConstantParams +
                 noOfFeatures) {
             throw new SiddhiAppCreationException("Invalid number of parameters. User can either choose to give " +
@@ -183,9 +205,6 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                     attributeExpressionExecutors[0].getReturnType());
         }
 
-        int maxHeightOfTree = 8; //todo : tune. check algo defaults
-        int horizon = 50;
-        int attributeStartIndex;
         if (attributeExpressionExecutors[1] instanceof VariableExpressionExecutor &&
                 attributeExpressionLength == minConstantParams + noOfFeatures) {
             attributeStartIndex = 1;

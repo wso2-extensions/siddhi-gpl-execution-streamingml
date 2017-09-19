@@ -41,8 +41,8 @@ public class WeightedKMeans {
     /**
      * Perform clustering
      */
-    private static void cluster(List<DataPoint> dataPointsArray, KMeansModel model, int noOfClusters, int maximumIterations,
-                                int noOfDimensions) {
+    private static void cluster(List<DataPoint> dataPointsArray, KMeansModel model, int noOfClusters,
+                                int maximumIterations, int noOfDimensions) {
         if (logger.isDebugEnabled()) {
             logger.debug("initial Clustering");
         }
