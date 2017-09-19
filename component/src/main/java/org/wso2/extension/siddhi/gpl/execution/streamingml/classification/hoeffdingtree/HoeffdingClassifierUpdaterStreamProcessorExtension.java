@@ -17,9 +17,9 @@
 package org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree;
 
 import org.apache.log4j.Logger;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.ClassifierPrequentialModelEvaluation;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util.AdaptiveHoeffdingModelsHolder;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util.AdaptiveHoeffdingTreeModel;
-import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util.PrequentialModelEvaluation;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
@@ -160,7 +160,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
     private VariableExpressionExecutor classLabelVariableExecutor;
 
     private double[] cepEvent;
-    private PrequentialModelEvaluation evolutionModel;
+    private ClassifierPrequentialModelEvaluation evolutionModel;
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
@@ -175,7 +175,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
             if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
                 ConstantExpressionExecutor modelNameExecutor =
                         (ConstantExpressionExecutor) attributeExpressionExecutors[0];
-                if (CoreUtils.isLabelType(modelNameExecutor.getReturnType())) {
+                if (modelNameExecutor.getReturnType() == Attribute.Type.STRING) {
                     modelPrefix = (String) modelNameExecutor.getValue();
                     // model name = user given name + siddhi app name
                     modelName = siddhiAppName + "." + modelPrefix;
@@ -249,7 +249,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                 }
 
             }
-            evolutionModel = new PrequentialModelEvaluation();
+            evolutionModel = new ClassifierPrequentialModelEvaluation();
             evolutionModel.reset(noOfClasses);
         } else {
             throw new SiddhiAppValidationException(String.format("Invalid number of attributes for "

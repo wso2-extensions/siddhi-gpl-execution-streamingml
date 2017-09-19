@@ -99,9 +99,8 @@ public class CoreUtils {
 
                 //feature attributes not numerical type
                 if (!isNumeric(featureAttributeType)) {
-                    throw new SiddhiAppValidationException("model.features in " + (i + 1) + "th parameter is not " +
-                            "a numerical type attribute. Found " +
-                            attributeExpressionExecutors[i].getReturnType()
+                    throw new SiddhiAppValidationException("model.features in " + (i + 1) + "th parameter is not "
+                            + "a numerical type attribute. Found " + attributeExpressionExecutors[i].getReturnType()
                             + ". Check the input stream definition.");
                 }
 
