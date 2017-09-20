@@ -327,7 +327,7 @@ public class ClusTreeStreamProcessorExtensionTest {
 
         String query = (
                 "@info(name = 'query1') " +
-                        "from InputStream#streamingml:clusTree(2.1, 10, 20, 5, 50, x, 3.1f) " +
+                        "from InputStream#streamingml:clusTree(2.1, 10, 20, 5, 50, x, y) " +
                         "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
@@ -348,7 +348,7 @@ public class ClusTreeStreamProcessorExtensionTest {
 
         String query = (
                 "@info(name = 'query1') " +
-                        "from InputStream#streamingml:clusTree(2, 10.3f, 20, 5, 50, x, 3.1f) " +
+                        "from InputStream#streamingml:clusTree(2, 10.3f, 20, 5, 50, x, y) " +
                         "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
@@ -370,29 +370,7 @@ public class ClusTreeStreamProcessorExtensionTest {
 
         String query = (
                 "@info(name = 'query1') " +
-                        "from InputStream#streamingml:clusTree(2, 10, 20, 5.4, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
-                        "insert into OutputStream;");
-        try {
-            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
-        } catch (Exception e) {
-            logger.info("Error caught");
-            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
-            AssertJUnit.assertTrue(e.getCause().getMessage().contains("maxHeightOfTree should be of type int but " +
-                    "found DOUBLE"));
-        }
-    }
-
-    @Test
-    public void testClusTree2D_14() throws Exception {
-        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate maxHeightOfTree " +
-                "to be above a minimum value to produce required noOfClusters");
-        SiddhiManager siddhiManager = new SiddhiManager();
-        String inputStream = "define stream InputStream (x double, y double);";
-
-        String query = (
-                "@info(name = 'query1') " +
-                        "from InputStream#streamingml:clusTree(2, 10, 20, 5.4, 50, x, 3.1f) " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 5.4, 50, x, y) " +
                         "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
@@ -442,6 +420,133 @@ public class ClusTreeStreamProcessorExtensionTest {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
         } catch (Exception e) {
             logger.info(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testClusTree2D_17() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate horizon to be int");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 2, 50.3f, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("horizon should be of type int but found FLOAT"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_18() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate noOfClusters to be positive");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(-2, 10, 20, 2, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("noOfClusters should be a positive integer " +
+                    "but found -2"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_19() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate maxIterations to be positive");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, -10, 20, 2, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("maxIterations should be a positive integer " +
+                    "but found -10"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_20() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate noOfEventsToRefreshMacroModel " +
+                "to be positive");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, -20, 2, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("noOfEventsToRefreshMacroModel should be a " +
+                    "positive integer but found -20"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_21() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate maxHeightOfTree " +
+                "to be above a minimum value to produce required noOfClusters");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(20, 10, 20, 2, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("maxHeightOfTree should be an int greater " +
+                    "than 2.7268 but found 2"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_22() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to validate horizon to be positive");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 2, -50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("horizon should be a positive integer but " +
+                    "found -50"));
         }
     }
 }
