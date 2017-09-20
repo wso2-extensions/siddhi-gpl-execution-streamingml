@@ -56,6 +56,7 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
     }
 
     public AdaptiveModelRulesModel(AdaptiveModelRulesModel model) {
+        this.amRulesRegressor = model.amRulesRegressor;
         this.modelName = model.modelName;
         this.streamHeader = model.streamHeader;
         this.noOfFeatures = model.noOfFeatures;
@@ -107,9 +108,6 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
         return new Object[]{votes, meanSquaredError};
     }
 
-    /**
-     * @return
-     */
     public boolean isInitialized() {
         return initialized;
     }
@@ -121,7 +119,6 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
         }
         return validStreamHeader;
     }
-
 
     public void setConfigurations(double splitConfidence, double tieBreakThreshold, int gracePeriod,
                                   int changeDetector, int anomalyDetector) {

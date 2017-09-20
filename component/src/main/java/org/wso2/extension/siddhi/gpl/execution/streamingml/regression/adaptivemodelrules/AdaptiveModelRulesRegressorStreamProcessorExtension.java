@@ -43,6 +43,7 @@ import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -194,7 +195,7 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
 
     @Override
     public Map<String, Object> currentState() {
-        return null;
+        return new HashMap<>();
     }
 
     @Override
