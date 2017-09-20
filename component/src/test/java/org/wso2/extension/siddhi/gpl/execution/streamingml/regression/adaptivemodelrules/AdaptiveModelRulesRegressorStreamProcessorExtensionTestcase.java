@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
 import org.apache.log4j.Logger;
@@ -143,8 +160,8 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
-            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found for " +
-                    "the model.name argument, required STRING but found INT"));
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found for the model.name"
+                    + " argument, required STRING, but found INT."));
         }
     }
 
@@ -177,7 +194,7 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
         SiddhiManager siddhiManager = new SiddhiManager();
 
         String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
-                "double, attribute_3 double, attribute_4 string );";
+                "double, attribute_3 double, attribute_4 double );";
         String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor() \n"
                 + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
                 "insert into outputStream;");
@@ -199,7 +216,7 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
 
         String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
                 "double, attribute_3 double);";
-        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('model1', " +
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('ml', " +
                 "attribute_0, attribute_1, attribute_2) \n"
                 + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
                 "insert into outputStream;");
@@ -211,9 +228,9 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
-            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Model [AmRulesRegressorTestApp.model1] "
-                    + "needs to initialized prior to be used with streamingml:AMRulesRegressor. Perform "
-                    + "streamingml:updateAMRulesRegressor process first."));
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid number of parameters for "
+                    + "streamingml:AMRulesRegressor. This Stream Processor requires  5 parameters, namely, "
+                    + "model.name and 4 feature_attributes, but found 3 parameters"));
         }
     }
 
@@ -234,8 +251,8 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
-            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found " +
-                    "for the model.name argument, required STRING but found DOUBLE"));
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found for the model.name"
+                    + " argument, required STRING, but found DOUBLE"));
         }
     }
 

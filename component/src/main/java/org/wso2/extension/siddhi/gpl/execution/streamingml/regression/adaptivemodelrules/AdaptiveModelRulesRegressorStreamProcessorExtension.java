@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.RegressorModelHolder;
@@ -30,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Do regression analysis using an AMRulesRegressor model.
+ * Perform regression analysis using an Adaptive Model Rules Regressor model.
  * built via @{@link AdaptiveModelRulesRegressorStreamProcessorExtension}
  */
 @Extension(
@@ -41,14 +58,11 @@ import java.util.Map;
                 @Parameter(name = "model.name",
                         description = "The name of the model to be used for prediction.",
                         type = {DataType.STRING}),
-                @Parameter(name = "feature.vector",
+                @Parameter(name = "model.feature",
                         description = "The feature vector for the regression analysis",
                         type = {DataType.INT, DataType.FLOAT, DataType.FLOAT, DataType.DOUBLE}),
         },
         returnAttributes = {
-                @ReturnAttribute(name = "featureVector",
-                        description = "The feature vector used for the regression analysis",
-                        type = {DataType.DOUBLE}),
                 @ReturnAttribute(name = "prediction",
                         description = "Predicted value",
                         type = {DataType.DOUBLE}),
@@ -91,59 +105,53 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
         String modelPrefix;
         noOfFeatures = inputDefinition.getAttributeList().size();
 
-        if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
-            if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.STRING) {
-                modelPrefix = (String) ((ConstantExpressionExecutor)
-                        attributeExpressionExecutors[0])
-                        .getValue();
-                // model name = user given name + siddhi app name
-                modelName = siddhiAppContext.getName() + "." + modelPrefix;
+        if (attributeExpressionLength > minNoOfParameters) {
+            if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
+                if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.STRING) {
+                    modelPrefix = (String) ((ConstantExpressionExecutor)
+                            attributeExpressionExecutors[0]).getValue();
+                    // model name = user given name + siddhi app name
+                    modelName = siddhiAppContext.getName() + "." + modelPrefix;
+                } else {
+                    throw new SiddhiAppValidationException(String.format("Invalid parameter type found for the "
+                                    + "model.name argument, required %s, but found %s.",
+                            Attribute.Type.STRING, attributeExpressionExecutors[0].getReturnType().toString()));
+                }
             } else {
-                throw new SiddhiAppValidationException(
-                        "Invalid parameter type found for the model.name argument, "
-                                + "required " + Attribute.Type.STRING
-                                + " but found " + attributeExpressionExecutors[0].getReturnType().toString());
+                throw new SiddhiAppValidationException("Parameter model.name must be a constant but found "
+                        + attributeExpressionExecutors[0].getClass().getCanonicalName());
             }
         } else {
-            throw new SiddhiAppValidationException("Parameter model.name must be a constant but found "
-                    + attributeExpressionExecutors[0].getClass().getCanonicalName());
+            throw new SiddhiAppValidationException(String.format("streamingML:AMRulesRegressor needs exactly "
+                            + "model.name and %s feature atttributes, but found %s.",
+                    noOfFeatures, attributeExpressionLength));
         }
-
-        try {
-            AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
-            if (!model.isInitialized()) {
-                throw new SiddhiAppValidationException(String.format("Model [%s] needs to initialized "
-                        + "prior to be used with streamingml:AMRulesRegressor. "
-                        + "Perform streamingml:updateAMRulesRegressor process first.", modelName));
-            }
-            if (!model.isValidStreamHeader(noOfFeatures)) {
-                throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
-                                + "streamingml:AMRulesRegressor. Model [%s] expects %s features, but "
-                                + "the input specifies %s features.",
-                        this.modelName, model.getNoOfFeatures(), noOfFeatures));
-            }
-            if (attributeExpressionLength != ((model.getNoOfFeatures()) + minNoOfParameters)) {
-                throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
-                                + "streamingml:AMRulesRegressor. This Stream Processor requires  %s "
-                                + "parameters, namely, model.name and at %s feature_attributes, "
-                                + "but found %s parameters", (minNoOfParameters + (model.getNoOfFeatures())),
-                        model.getNoOfFeatures(), attributeExpressionExecutors.length));
-            }
-
-        } catch (NullPointerException e) {
+        AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
+        if (model == null || !model.isInitialized()) {
             throw new SiddhiAppValidationException(String.format("Model [%s] needs to initialized "
                     + "prior to be used with streamingml:AMRulesRegressor. "
                     + "Perform streamingml:updateAMRulesRegressor process first.", modelName));
         }
-
-
+        if (!model.isValidStreamHeader(noOfFeatures)) {
+            throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
+                            + "streamingml:AMRulesRegressor. Model [%s] expects %s features, but "
+                            + "the input specifies %s features.",
+                    this.modelName, model.getNoOfFeatures(), noOfFeatures));
+        }
+        if (attributeExpressionLength != ((model.getNoOfFeatures()) + minNoOfParameters)) {
+            throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
+                            + "streamingml:AMRulesRegressor. This Stream Processor requires  %s "
+                            + "parameters, namely, model.name and %s feature_attributes, "
+                            + "but found %s parameters", (minNoOfParameters + (model.getNoOfFeatures())),
+                    model.getNoOfFeatures(), (attributeExpressionExecutors.length - minNoOfParameters)));
+        }
         featureVariableExpressionExecutors = CoreUtils.extractAndValidateFeatures(inputDefinition,
                 attributeExpressionExecutors, (attributeExpressionLength - noOfFeatures), noOfFeatures);
 
         cepEvent = new double[noOfFeatures + 1];
 
         //set attributes for Output Stream
-        List<Attribute> attributes = new ArrayList<Attribute>();
+        List<Attribute> attributes = new ArrayList<>();
         attributes.add(new Attribute("prediction", Attribute.Type.DOUBLE));
         attributes.add(new Attribute("meanSquaredError", Attribute.Type.DOUBLE));
         return attributes;
@@ -167,7 +175,6 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
                                 + "of Model[%s]", (i + 1), modelName));
                     }
                 }
-                cepEvent[noOfFeatures] = 0;
                 AdaptiveModelRulesModel model = RegressorModelHolder.getInstance()
                         .getAMRulesRegressorModel(modelName);
                 Object[] outputData = model.getPrediction(cepEvent);
@@ -177,15 +184,12 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
         }
     }
 
-
     @Override
     public void start() {
-
     }
 
     @Override
     public void stop() {
-        RegressorModelHolder.getInstance().deleteRegressorModel(modelName);
     }
 
     @Override

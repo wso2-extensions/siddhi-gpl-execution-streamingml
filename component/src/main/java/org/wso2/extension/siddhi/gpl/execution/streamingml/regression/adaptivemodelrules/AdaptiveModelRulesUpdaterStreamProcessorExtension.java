@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ *
+ * WSO2 Inc. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
 import org.apache.log4j.Logger;
@@ -33,7 +50,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Build/update using an AdaptiveModelRules Regressor Model.
+ * Build/update an Adaptive Model Rules Regressor Model for regression analysis.
  * {@link AdaptiveModelRulesUpdaterStreamProcessorExtension}
  */
 @Extension(
@@ -165,7 +182,6 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                         "Number of features must be greater than 2 but" + " found "
                                 + noOfAttributes);
             }
-
             AdaptiveModelRulesModel model
                     = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
             if (model == null) {
@@ -233,8 +249,8 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                             parameterPosition++;
                         } else {
                             throw new SiddhiAppValidationException(String.format("Split Confidence must be an %s."
-                                            + " But found %s at position %s", Attribute.Type.DOUBLE,
-                                    attributeExpressionExecutors[1].getReturnType(), (i + 1)));
+                                            + " But found %s at position %s",
+                                    Attribute.Type.DOUBLE, attributeExpressionExecutors[1].getReturnType(), (i + 1)));
                         }
                         break;
                     case 2:
@@ -245,8 +261,8 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                             parameterPosition++;
                         } else {
                             throw new SiddhiAppValidationException(String.format("Tie Break Threshold must be an %s."
-                                            + " But found %s at position %s", Attribute.Type.DOUBLE,
-                                    attributeExpressionExecutors[2].getReturnType(), (i + 1)));
+                                            + " But found %s at position %s",
+                                    Attribute.Type.DOUBLE, attributeExpressionExecutors[2].getReturnType(), (i + 1)));
                         }
                         break;
                     case 3:
@@ -255,9 +271,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                     attributeExpressionExecutors[3]).getValue();
                             parameterPosition++;
                         } else {
-                            throw new SiddhiAppValidationException(String.format("Grace Period must be a "
-                                            + "%s. But found %s at position %s.", Attribute.Type.DOUBLE,
-                                    attributeExpressionExecutors[3].getReturnType(), (i + 1)));
+                            throw new SiddhiAppValidationException(String.format("Grace Period must be a %s. "
+                                            + "But found %s at position %s.",
+                                    Attribute.Type.DOUBLE, attributeExpressionExecutors[3].getReturnType(), (i + 1)));
                         }
                         break;
                     case 4:
@@ -266,9 +282,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                     attributeExpressionExecutors[4]).getValue();
                             parameterPosition++;
                         } else {
-                            throw new SiddhiAppValidationException(String.format("Change Detector must be a "
-                                            + "%s. But found %s at position %s.", Attribute.Type.INT,
-                                    attributeExpressionExecutors[4].getReturnType(), (i + 1)));
+                            throw new SiddhiAppValidationException(String.format("Change Detector must be a %s. "
+                                            + "But found %s at position %s.",
+                                    Attribute.Type.INT, attributeExpressionExecutors[4].getReturnType(), (i + 1)));
                         }
                         break;
                     case 5:
@@ -277,9 +293,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                     attributeExpressionExecutors[5]).getValue();
                             parameterPosition++;
                         } else {
-                            throw new SiddhiAppValidationException(String.format("Anomaly Detector must be a "
-                                            + "%s. But found %s at position %s.", Attribute.Type.INT,
-                                    attributeExpressionExecutors[5].getReturnType(), (i + 1)));
+                            throw new SiddhiAppValidationException(String.format("Anomaly Detector must be a %s. "
+                                            + "But found %s at position %s.",
+                                    Attribute.Type.INT, attributeExpressionExecutors[5].getReturnType(), (i + 1)));
                         }
                         break;
                     default:
@@ -290,7 +306,6 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                         attributeExpressionExecutors[i].getClass().getCanonicalName(), (i + 1)));
             }
         }
-
         if (parameterPosition == (noOfHyperParameters + minNoOfParameters)) {
             AdaptiveModelRulesModel model = RegressorModelHolder.getInstance()
                     .getAMRulesRegressorModel(modelName);
@@ -318,17 +333,12 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                 + "of Model[%s]", (i + 1), modelName));
                     }
                 }
-
-                AdaptiveModelRulesModel model = RegressorModelHolder.getInstance()
-                        .getAMRulesRegressorModel(modelName);
-
+                AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
                 double meanSquaredError = model.trainOnEvent(cepEvent);
-
                 complexEventPopulater.populateComplexEvent(complexEvent, new Object[]{meanSquaredError});
             }
             nextProcessor.process(streamEventChunk);
         }
-
     }
 
     @Override

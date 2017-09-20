@@ -60,12 +60,14 @@ public class ClassifierPrequentialModelEvaluation {
         }
     }
 
-    //for classification
+    /**
+     * Classification Prequential Evaluation accuracy
+     *
+     * @return
+     */
     public double getFractionCorrectlyClassified() {
         return this.weightObserved > 0.0D ? this.weightCorrect / this.weightObserved : 0.0D;
     }
-
-
 
 
 }

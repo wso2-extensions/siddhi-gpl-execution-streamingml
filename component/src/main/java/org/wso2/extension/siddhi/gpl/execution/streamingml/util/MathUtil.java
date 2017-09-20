@@ -20,34 +20,12 @@ package org.wso2.extension.siddhi.gpl.execution.streamingml.util;
  * Special mathematical functions used in the ML algorithms.
  */
 public class MathUtil {
-    /**
-     * Dot product of two 'double' vectors.
-     *
-     * @param vector1 vector 1
-     * @param vector2 vector 2
-     * @return the dot product.
-     */
-    public static double dot(double[] vector1, double[] vector2) {
-        if (vector1.length != vector2.length) {
-            throw new IllegalArgumentException("The dimensions have to be equal!");
-        }
-
-        double sum = 0;
-        for (int i = 0; i < vector1.length; i++) {
-            sum += vector1[i] * vector2[i];
-        }
-
-        return sum;
-    }
-
-
     public static double sum(double[] val) {
         double sum = 0;
         for (double x : val) {
             sum += x;
         }
         return sum;
-
     }
 
     /**
@@ -59,18 +37,15 @@ public class MathUtil {
         if (places < 0) {
             throw new IllegalArgumentException();
         }
-
         long factor = (long) Math.pow(10, places);
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
     }
 
-    public static double meanSquaredError(double truth, double prediction) {
-        return Math.sqrt(Math.abs(truth - prediction));
-    }
     /**
      * finds the euclidean distance between two input points of equal dimension
+     *
      * @param point1 input point one
      * @param point2 input point two
      * @return euclidean distance between point1 and point2

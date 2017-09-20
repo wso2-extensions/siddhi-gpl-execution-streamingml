@@ -183,12 +183,12 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     private InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
-        ArrayList<Attribute> attributes = new ArrayList<Attribute>();
+        List<Attribute> attributes = new ArrayList<Attribute>();
         for (int i = 0; i < numberOfAttributes - 1; i++) {
             attributes.add(new Attribute("numeric" + (i + 1)));
         }
         // Add class value
-        ArrayList<String> classLabels = new ArrayList<String>();
+        List<String> classLabels = new ArrayList<String>();
         for (int i = 0; i < this.noOfClasses; i++) {
             classLabels.add("class" + (i + 1));
         }
