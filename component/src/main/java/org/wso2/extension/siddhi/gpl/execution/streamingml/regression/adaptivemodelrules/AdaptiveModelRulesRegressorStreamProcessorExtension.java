@@ -73,7 +73,7 @@ import java.util.Map;
                                 + "The outputStream will have following definition; "
                                 + "(attribute_0 double, attribute_1 double, attribute_2"
                                 + " double, attribute_3 double, prediction double, "
-                                + "weightedError double)."
+                                + "meanSquaredError double)."
                 )
         }
 )
@@ -109,26 +109,33 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
                     + attributeExpressionExecutors[0].getClass().getCanonicalName());
         }
 
-        AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
+        try {
+            AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
+            if (!model.isInitialized()) {
+                throw new SiddhiAppValidationException(String.format("Model [%s] needs to initialized "
+                        + "prior to be used with streamingml:AMRulesRegressor. "
+                        + "Perform streamingml:updateAMRulesRegressor process first.", modelName));
+            }
+            if (!model.isValidStreamHeader(noOfFeatures)) {
+                throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
+                                + "streamingml:AMRulesRegressor. Model [%s] expects %s features, but "
+                                + "the input specifies %s features.",
+                        this.modelName, model.getNoOfFeatures(), noOfFeatures));
+            }
+            if (attributeExpressionLength != ((model.getNoOfFeatures()) + minNoOfParameters)) {
+                throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
+                                + "streamingml:AMRulesRegressor. This Stream Processor requires  %s "
+                                + "parameters, namely, model.name and at %s feature_attributes, "
+                                + "but found %s parameters", (minNoOfParameters + (model.getNoOfFeatures())),
+                        model.getNoOfFeatures(), attributeExpressionExecutors.length));
+            }
 
-        if (!model.isInitialized()) {
+        } catch (NullPointerException e) {
             throw new SiddhiAppValidationException(String.format("Model [%s] needs to initialized "
                     + "prior to be used with streamingml:AMRulesRegressor. "
                     + "Perform streamingml:updateAMRulesRegressor process first.", modelName));
         }
-        if (!model.isValidStreamHeader(noOfFeatures)) {
-            throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
-                            + "streamingml:AMRulesRegressor. Model [%s] expects %s features, but "
-                            + "the input specifies %s features.",
-                    this.modelName, model.getNoOfFeatures(), noOfFeatures));
-        }
-        if (attributeExpressionLength != ((model.getNoOfFeatures()) + minNoOfParameters)) {
-            throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
-                            + "streamingml:AMRulesRegressor. This Stream Processor requires  %s "
-                            + "parameters, namely, model.name and at %s feature_attributes, "
-                            + "but found %s parameters", (minNoOfParameters + (model.getNoOfFeatures())),
-                    model.getNoOfFeatures(), attributeExpressionExecutors.length));
-        }
+
 
         featureVariableExpressionExecutors = CoreUtils.extractAndValidateFeatures(inputDefinition,
                 attributeExpressionExecutors, (attributeExpressionLength - noOfFeatures), noOfFeatures);
@@ -178,7 +185,7 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
 
     @Override
     public void stop() {
-
+        RegressorModelHolder.getInstance().deleteRegressorModel(modelName);
     }
 
     @Override

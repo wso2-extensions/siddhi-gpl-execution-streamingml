@@ -14,8 +14,8 @@ import moa.options.ClassOption;
 import moa.tasks.TaskMonitor;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.AbstractRegressor;
-import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.RegressionPrequentialModelEvaluation;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.Regressor;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 /**
@@ -30,6 +30,9 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
     private int noOfFeatures;
     private String modelName;
     private boolean initialized = false;
+    private int noOfInstances = 0;
+    private double squaredError = 0;
+    private double meanSquaredError = 0;
 
     public AdaptiveModelRulesModel(String modelName) {
         this.modelName = modelName;
@@ -70,19 +73,21 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
     public double trainOnEvent(double[] cepEvent) {
         Instance trainInstance = createMOAInstance(cepEvent);
         trainInstance.setClassValue(cepEvent[cepEvent.length - 1]);
-        //training on the event instance
         trainInstance.setDataset(streamHeader);
-        double[] prediction = amRulesRegressor.getVotesForInstance(trainInstance);
+
+        double truth = cepEvent[cepEvent.length - 1];
+        double prediction = MathUtil.roundOff(amRulesRegressor.getVotesForInstance(trainInstance)[0], 3);
+
+        //training on the event instance
         amRulesRegressor.trainOnInstanceImpl(trainInstance);
-        return RegressionPrequentialModelEvaluation.regressionMeasure(cepEvent, prediction);
+        return calMeanSquaredError(truth, prediction);
     }
 
     @Override
     public Object[] getPrediction(double[] cepEvent) {
         Instance testInstance = createMOAInstance(cepEvent);
-        double votes = amRulesRegressor.getVotesForInstance(testInstance)[0];
-        double weightedError = amRulesRegressor.newErrorWeightedVote().getWeightedError();
-        return new Object[]{votes, weightedError};
+        double votes = MathUtil.roundOff(amRulesRegressor.getVotesForInstance(testInstance)[0], 3);
+        return new Object[]{votes, meanSquaredError};
     }
 
     /**
@@ -146,6 +151,12 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
         }
     }
 
+    private double calMeanSquaredError(double truth, double prediction) {
+        noOfInstances++;
+        squaredError += Math.pow((truth - prediction), 2);
+        return meanSquaredError = MathUtil.roundOff((squaredError / noOfInstances), 3);
+    }
+
     public int getNoOfFeatures() {
         return noOfFeatures;
     }
@@ -154,6 +165,4 @@ public class AdaptiveModelRulesModel extends AbstractRegressor implements Regres
     protected void prepareForUseImpl(TaskMonitor taskMonitor, ObjectRepository objectRepository) {
 
     }
-
-
 }

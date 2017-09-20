@@ -66,5 +66,7 @@ public class MathUtil {
         return (double) tmp / factor;
     }
 
-
+    public static double meanSquaredError(double truth, double prediction) {
+        return Math.sqrt(Math.abs(truth - prediction));
+    }
 }

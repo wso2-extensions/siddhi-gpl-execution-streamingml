@@ -41,24 +41,26 @@ public class RegressorModelHolder {
         return instance;
     }
 
-    public void setRegressorModelMap(Map<String, Regressor> modelsMap) {
-        this.amRulesModelMap = modelsMap;
-    }
-
-    public AdaptiveModelRulesModel getAMRulesRegressorModel(String name) {
-        AdaptiveModelRulesModel model = (AdaptiveModelRulesModel) amRulesModelMap.get(name);
-        if (model == null) {
-            model = new AdaptiveModelRulesModel(name);
-            addRegressorModel(name, model);
-        }
+    public AdaptiveModelRulesModel createAMRulesRegressorModel(String name) {
+        AdaptiveModelRulesModel model = new AdaptiveModelRulesModel(name);
+        addRegressorModel(name, model);
         return model;
     }
 
-    private void addRegressorModel(String name, Regressor model) {
+    public AdaptiveModelRulesModel getAMRulesRegressorModel(String name) {
+        return (AdaptiveModelRulesModel) amRulesModelMap.get(name);
+    }
+
+    public AdaptiveModelRulesModel getClonedPerceptronModel(String modelName) {
+        return new AdaptiveModelRulesModel(getAMRulesRegressorModel(modelName));
+    }
+
+    public void addRegressorModel(String name, Regressor model) {
         amRulesModelMap.put(name, model);
     }
 
     public void deleteRegressorModel(String name) {
         amRulesModelMap.remove(name);
     }
+
 }

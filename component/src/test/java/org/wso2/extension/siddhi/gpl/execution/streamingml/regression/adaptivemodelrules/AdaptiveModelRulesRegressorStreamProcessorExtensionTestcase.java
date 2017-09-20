@@ -7,9 +7,9 @@ import org.testng.annotations.Test;
 import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
+import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
-import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.SiddhiTestHelper;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,20 +52,15 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
 
         SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(trainingStream + inStreamDefinition
                 + trainingQuery + query);
+
         siddhiAppRuntime.addCallback("query1", new QueryCallback() {
 
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 count.incrementAndGet();
-                EventPrinter.print(inEvents);
-                if (count.get() == 1) {
-                    AssertJUnit.assertArrayEquals(new Object[]{14.96, 41.76, 1024.07, 73.17, 461.157, 1.0},
-                            inEvents[0].getData());
-                } else if (count.get() == 2) {
-                    AssertJUnit.assertArrayEquals(new Object[]{25.18, 62.96, 1020.04, 59.08, 3434, 1.0},
-                            inEvents[0].getData());
-                } else if (count.get() == 3) {
-                    AssertJUnit.assertArrayEquals(new Object[]{5.11, 39.4, 1012.16, 92.14, 434, 1.0},
+                //  EventPrinter.print(inEvents);
+                if (count.get() == 3) {
+                    AssertJUnit.assertArrayEquals(new Object[]{5.11, 39.4, 1012.16, 92.14, 460.992, 11578.597},
                             inEvents[0].getData());
                 }
             }
@@ -93,7 +88,6 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
             inputHandler.send(new Object[]{18.21, 45, 1022.86, 48.84, 467.54});
             inputHandler.send(new Object[]{11.04, 41.74, 1022.6, 77.51, 477.2});
             inputHandler.send(new Object[]{14.45, 52.75, 1023.97, 63.59, 459.85});
-            inputHandler.send(new Object[]{13.97, 38.47, 1015.15, 55.28, 464.3});
 
             Thread.sleep(1100);
 
@@ -111,4 +105,164 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
         }
     }
 
+    @Test
+    public void testRegressionStreamProcessorExtension2() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - Features are not of numeric type");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 bool );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('model1', " +
+                " attribute_0, attribute_1, attribute_2, attribute_3) \n" +
+                "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
+                "insert into outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension3() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - model.name is not String");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor(123, " +
+                "attribute_0, attribute_1, attribute_2, attribute_3) \n" + "" +
+                "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
+                "insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found for " +
+                    "the model.name argument, required STRING but found INT"));
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension4() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - invalid model name");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double, attribute_4 string );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor(attribute_4, " +
+                "attribute_0, attribute_1, attribute_2, attribute_3, attribute_4) \n"
+                + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError" +
+                " insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Parameter model.name must be a constant "
+                    + "but found org.wso2.siddhi.core.executor.VariableExpressionExecutor"));
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension5() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - incorrect initialization");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double, attribute_4 string );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor() \n"
+                + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
+                "insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+        }
+    }
+
+
+    @Test
+    public void testRegressionStreamProcessorExtension6() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - Incompatible model");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double);";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('model1', " +
+                "attribute_0, attribute_1, attribute_2) \n"
+                + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
+                "insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(trainingStream +
+                    inStreamDefinition + trainingQuery + query);
+            AssertJUnit.fail();
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Model [AmRulesRegressorTestApp.model1] "
+                    + "needs to initialized prior to be used with streamingml:AMRulesRegressor. Perform "
+                    + "streamingml:updateAMRulesRegressor process first."));
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension7() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - invalid model name type");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double);";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor(0.2, " +
+                "attribute_0, attribute_1, attribute_2, attribute_3) \n" +
+                "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError " +
+                "insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid parameter type found " +
+                    "for the model.name argument, required STRING but found DOUBLE"));
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension8() throws InterruptedException {
+        logger.info("AMRulesRegressor UpdaterStreamProcessorExtension TestCase - init predict before " +
+                "training the model");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 " +
+                "double, attribute_3 double);";
+        String query = ("@info(name = 'query1') " +
+                "from StreamA#streamingml:AMRulesRegressor('model1', attribute_0, " +
+                "attribute_1, attribute_2, attribute_3) \n"
+                + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, confidenceLevel " +
+                "insert into outputStream;");
+
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(trainingStream
+                    + inStreamDefinition + query + trainingQuery);
+
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Model [AmRulesRegressorTestApp.model1] "
+                    + "needs to initialized prior to be used with streamingml:AMRulesRegressor. Perform "
+                    + "streamingml:updateAMRulesRegressor process first."));
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
 import org.apache.log4j.Logger;
-import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.RegressionPrequentialModelEvaluation;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.Regressor;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.RegressorModelHolder;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules.util.AdaptiveModelRulesModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
@@ -26,9 +26,9 @@ import org.wso2.siddhi.core.util.config.ConfigReader;
 import org.wso2.siddhi.query.api.definition.AbstractDefinition;
 import org.wso2.siddhi.query.api.definition.Attribute;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
-import weka.core.pmml.jaxbbindings.DATATYPE;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,7 +82,7 @@ import java.util.Map;
         },
         returnAttributes = {
                 @ReturnAttribute(name = "meanSquaredError",
-                        description = "The accuracy evaluation of the model(Prequnetial Evaluation)",
+                        description = "The current Mean Squared Error of the model",
                         type = {DataType.DOUBLE})
         },
         examples = {
@@ -110,7 +110,7 @@ import java.util.Map;
                                 + "built/updated with a split confidence of 1.0E-7D, tie break threshold of 0.05D, "
                                 + "a grace period of 200, NoChangeDetection and NoAnomalyDetection "
                                 + "using attribute_0, attribute_1, attribute_2, attribute_3 as "
-                                + "features and attribute_4 as the target value. The accuracy evaluation will be "
+                                + "features and attribute_4 as the target value. The meanSquaredError will be "
                                 + "emitted to the outputStream."
                 )
         }
@@ -129,7 +129,6 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
     private List<VariableExpressionExecutor> featureVariableExpressionExecutors = new ArrayList<>();
 
     private double[] cepEvent;
-    private RegressionPrequentialModelEvaluation evolutionModel;
 
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
@@ -167,16 +166,18 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                 + noOfAttributes);
             }
 
-            //todo:try not to create model
             AdaptiveModelRulesModel model
                     = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
-
+            if (model == null) {
+                model = RegressorModelHolder.getInstance().createAMRulesRegressorModel(modelName);
+            }
             if (!model.isInitialized()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("Model [%s] has not been initialized.", modelName));
                 }
                 model.init(noOfAttributes);
             }
+            cepEvent = new double[noOfAttributes];
             if (noOfParameters > minNoOfParameters) {
                 //configuation with hyper-parameters
                 if (noOfParameters == (minNoOfParameters + noOfHyperParameters)) {
@@ -342,11 +343,14 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
 
     @Override
     public Map<String, Object> currentState() {
-        return null;
+        Map<String, Object> currentState = new HashMap<>();
+        currentState.put("RegressorModel", RegressorModelHolder.getInstance().getClonedPerceptronModel(modelName));
+        return currentState;
     }
 
     @Override
-    public void restoreState(Map<String, Object> map) {
-
+    public void restoreState(Map<String, Object> state) {
+        RegressorModelHolder.getInstance().addRegressorModel(modelName, (Regressor)
+                state.get("RegressorModel"));
     }
 }

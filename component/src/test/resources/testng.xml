@@ -24,6 +24,9 @@
         <classes>
             <class name="org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.HoeffdingClassifierUpdaterStreamProcessorExtensionTestCase"/>
             <class name="org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.HoeffdingClassifierStreamProcessorExtensionTestCase"/>
+            <class name="org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules.AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase"/>
+            <class name="org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules.AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase"/>
+
         </classes>
     </test>
 </suite>
