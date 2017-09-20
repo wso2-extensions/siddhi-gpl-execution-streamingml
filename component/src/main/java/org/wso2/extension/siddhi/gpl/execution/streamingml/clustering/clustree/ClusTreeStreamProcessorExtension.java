@@ -345,7 +345,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 //make prediction if the model is trained
                 if (kMeansModel.isTrained()) {
                     if (logger.isDebugEnabled()) {
-                        logger.debug("Populating output");
+                        logger.debug("Populating the event with the prediction");
                     }
                     complexEventPopulater.populateComplexEvent(streamEvent,
                             kMeansModel.getPrediction(coordinateValuesOfCurrentDataPoint));
