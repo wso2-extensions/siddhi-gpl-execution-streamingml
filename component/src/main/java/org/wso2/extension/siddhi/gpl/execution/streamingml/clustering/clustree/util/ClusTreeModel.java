@@ -24,7 +24,6 @@ import moa.clusterers.clustree.ClusTree;
 import moa.core.ObjectRepository;
 import moa.options.AbstractOptionHandler;
 import moa.tasks.TaskMonitor;
-import org.apache.log4j.Logger;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -33,29 +32,16 @@ import java.util.List;
  */
 public class ClusTreeModel  extends AbstractOptionHandler {
     private static final long serialVersionUID = -7485124336894867529L;
-    private static final Logger logger = Logger.getLogger(ClusTreeModel.class);
-    private int noOfDimensions;
-    private int noOfClusters;
     private ClusTree clusTree;
 
     public ClusTreeModel() {
     }
 
-    public ClusTreeModel(ClusTreeModel model) {
-        this.clusTree = model.clusTree;
-        this.noOfDimensions = model.noOfDimensions;
-        this.noOfClusters = model.noOfClusters;
-    }
-
     /**
      * Initialize the model with input stream definition.
      *
-     * @param noOfDimensions number of feature attributes
-     * @param noOfClusters    number of classes
      */
-    public void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
-        this.noOfDimensions = noOfDimensions;
-        this.noOfClusters = noOfClusters;
+    public void init(int maxHeightOfTree, int horizon) {
         this.clusTree = new ClusTree();
         this.clusTree.maxHeightOption.setValue(maxHeightOfTree);
         this.clusTree.horizonOption.setValue(horizon);
@@ -64,9 +50,9 @@ public class ClusTreeModel  extends AbstractOptionHandler {
 
     /**
      * @param cepEvent   event data
-     * @param classLabel class  label of the cepEvent
+     *
      */
-    public void trainOnEvent(double[] cepEvent, String classLabel) {
+    public void trainOnEvent(double[] cepEvent) {
         Instance trainInstance = createMOAInstance(cepEvent);
         //training on the event instance
         clusTree.trainOnInstanceImpl(trainInstance);

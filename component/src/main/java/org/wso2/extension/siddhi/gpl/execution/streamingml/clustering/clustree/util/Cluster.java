@@ -39,9 +39,6 @@ public class Cluster implements Serializable {
         return centroid;
     }
 
-    public void setCentroid(DataPoint centroid) {
-        this.centroid = centroid;
-    }
 
     public List<DataPoint> getDataPointsInCluster() {
         return dataPointsInCluster;

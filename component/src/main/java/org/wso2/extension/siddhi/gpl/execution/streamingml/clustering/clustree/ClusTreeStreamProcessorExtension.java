@@ -295,7 +295,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
 
         //creating models
         clusTreeModel = new ClusTreeModel();
-        clusTreeModel.init(noOfDimensions, noOfClusters, maxHeightOfTree, horizon);
+        clusTreeModel.init(maxHeightOfTree, horizon);
         kMeansModel = new KMeansModel();
 
         executorService = siddhiAppContext.getExecutorService();
@@ -330,7 +330,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 }
 
                 //train the ClusTree Model with the datapoint
-                clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint, null);
+                clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint);
 
                 //train the model periodically
                 if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
