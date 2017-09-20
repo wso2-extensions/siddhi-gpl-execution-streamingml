@@ -119,7 +119,7 @@ public class KMeansModel implements Serializable {
         this.trained = trained;
     }
 
-    public void refresh(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
+    public void refresh(List<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
                         int noOfDimensions) {
         this.setClusterList(WeightedKMeans.run(dataPointsArray, noOfClusters, maxIterations,
                 noOfDimensions));

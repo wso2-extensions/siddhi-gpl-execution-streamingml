@@ -17,20 +17,20 @@
 
 package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util;
 
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * This class will be used for separate thread refreshment of kmeans model
  */
 public class Trainer implements Runnable {
     private KMeansModel kMeansModel;
-    private LinkedList<DataPoint> dataPointsArray;
+    private List<DataPoint> dataPointsArray;
     private int noOfClusters;
     private int maxIterations;
     private int noOfDimensions;
 
 
-    public Trainer(KMeansModel kMeansModel, LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
+    public Trainer(KMeansModel kMeansModel, List<DataPoint> dataPointsArray, int noOfClusters, int maxIterations,
                    int noOfDimensions) {
         this.kMeansModel = kMeansModel;
         this.dataPointsArray = dataPointsArray;

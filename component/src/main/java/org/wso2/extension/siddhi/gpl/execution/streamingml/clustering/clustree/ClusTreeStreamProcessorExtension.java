@@ -133,17 +133,17 @@ import java.util.concurrent.Future;
                         syntax = "@App:name('ClusTreeTestSiddhiApp') \n" +
                                 "define stream InputStream (x double, y double);\n" +
                                 "@info(name = 'query1') \n" +
-                                "from InputStream#streamingml:ClusTree(2, 10, 20, 5, 50, x, y) \n" +
+                                "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, x, y) \n" +
                                 "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y \n" +
                                 "insert into OutputStream;",
                         description = "This query will create a Siddhi app named ClusTreeTestSiddhiApp and will " +
-                                "accept 2D inputs od doubles. The query which is named query1 will create a ClusTree " +
+                                "accept 2D inputs of doubles. The query which is named query1 will create a ClusTree " +
                                 "model and will create a kmeans model after firsat 20 events and will " +
                                 "refresh it every 20 events after. Number of macro clusters will be 2 and the " +
                                 "maximum iterations of kmeans to converge will be 10. The max height of tree is " +
                                 "set to 5 so at maximum we will get 3^5 micro clusters from ClusTree and the " +
                                 "horizon is set as 50, so after 50 events micro clusters that were not updated " +
-                                "will lose their weight by half." //todo: add eg with default params
+                                "will lose their weight by half."
                 ),
                 @Example(
                         syntax = "@App:name('ClusTreeTestSiddhiApp') \n" +
@@ -161,9 +161,9 @@ import java.util.concurrent.Future;
 public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     private final int minConstantParams = 1;
     private final int maxConstantParams = 5;
-    private final int separateThreadThreshold = 500;
+    private final int separateThreadThreshold = 5000;
     private int noOfClusters;
-    private int noOfEventsToRefreshMacroModel = 100; //todo : tune. check algo defaults
+    private int noOfEventsToRefreshMacroModel = 500;
     private int noOfDimensions;
     private int maxIterations = 40;
     private double[] coordinateValuesOfCurrentDataPoint;
@@ -177,15 +177,15 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
                                    ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-        int noOfFeatures = inputDefinition.getAttributeList().size();
-        int maxHeightOfTree = 8; //todo : tune. check algo defaults
+        int maxNoOfFeatures = inputDefinition.getAttributeList().size();
+        int maxHeightOfTree = 8;
         int horizon = 1000;
         int attributeStartIndex;
         if (attributeExpressionLength < minConstantParams || attributeExpressionLength > maxConstantParams +
-                noOfFeatures) {
+                maxNoOfFeatures) {
             throw new SiddhiAppCreationException("Invalid number of parameters. User can either choose to give " +
-                    "all 4 hyper parameters or none at all. So query can have " + (minConstantParams + noOfFeatures)
-                    + " or " + (maxConstantParams + noOfFeatures) + " but found " + attributeExpressionLength +
+                    "all 4 hyper parameters or none at all. So query can have " + (minConstantParams + maxNoOfFeatures)
+                    + " or " + (maxConstantParams + maxNoOfFeatures) + " but found " + attributeExpressionLength +
                     " parameters.");
         }
 
@@ -206,7 +206,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
         }
 
         if (attributeExpressionExecutors[1] instanceof VariableExpressionExecutor &&
-                attributeExpressionLength == minConstantParams + noOfFeatures) {
+                attributeExpressionLength == minConstantParams + maxNoOfFeatures) {
             attributeStartIndex = 1;
         } else {
             attributeStartIndex = 5;
@@ -262,8 +262,8 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 throw new SiddhiAppCreationException("maxHeightOfTree should be of type int but found " +
                         attributeExpressionExecutors[3].getReturnType());
             }
-            maxHeightOfTree -= 1; // since this parameter when set to 0 MOA ClusTree implementation builds one root
-            // and 3 children. i.e one level
+            maxHeightOfTree -= 1; //MOA implementation is in such a way that if we pass 0 to maxHeightOfTree
+            // it will build a tree with one level. but user should be able to give 1 and get one level.
 
             //expressionExecutors[4] --> horizon
             if (!(attributeExpressionExecutors[4] instanceof ConstantExpressionExecutor)) {
@@ -332,7 +332,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
 
                 //train the model periodically
                 if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
-                    LinkedList<DataPoint> dpa = clusTreeModel.getMicroClusteringAsDPArray();
+                    List<DataPoint> dpa = clusTreeModel.getMicroClusteringAsDPArray();
                     if (noOfEventsToRefreshMacroModel < separateThreadThreshold) {
                         kMeansModel.refresh(dpa, noOfClusters, maxIterations,
                                 noOfDimensions);

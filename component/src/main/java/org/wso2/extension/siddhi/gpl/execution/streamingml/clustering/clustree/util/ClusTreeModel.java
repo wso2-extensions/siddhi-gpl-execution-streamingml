@@ -26,6 +26,7 @@ import moa.options.AbstractOptionHandler;
 import moa.tasks.TaskMonitor;
 import org.apache.log4j.Logger;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Represents the ClusTree model
@@ -52,7 +53,7 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param noOfDimensions number of feature attributes
      * @param noOfClusters    number of classes
      */
-    public synchronized void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
+    public void init(int noOfDimensions, int noOfClusters, int maxHeightOfTree, int horizon) {
         this.noOfDimensions = noOfDimensions;
         this.noOfClusters = noOfClusters;
         this.clusTree = new ClusTree();
@@ -65,19 +66,19 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param cepEvent   event data
      * @param classLabel class  label of the cepEvent
      */
-    public synchronized void trainOnEvent(double[] cepEvent, String classLabel) {
+    public void trainOnEvent(double[] cepEvent, String classLabel) {
         Instance trainInstance = createMOAInstance(cepEvent);
         //training on the event instance
         clusTree.trainOnInstanceImpl(trainInstance);
     }
 
     @Override
-    protected synchronized void prepareForUseImpl(TaskMonitor monitor, ObjectRepository repository) {
+    protected void prepareForUseImpl(TaskMonitor monitor, ObjectRepository repository) {
 
     }
 
     @Override
-    public synchronized void getDescription(StringBuilder sb, int indent) {
+    public void getDescription(StringBuilder sb, int indent) {
 
     }
 
@@ -85,17 +86,17 @@ public class ClusTreeModel  extends AbstractOptionHandler {
      * @param cepEvent Event Data
      * @return represents a single Event
      */
-    private synchronized Instance createMOAInstance(double[] cepEvent) {
+    private Instance createMOAInstance(double[] cepEvent) {
         Instance instance = new DenseInstance(1.0D, cepEvent);
         return instance;
     }
 
-    public synchronized Clustering getMicroClustering() {
+    public Clustering getMicroClustering() {
         return clusTree.getMicroClusteringResult();
     }
 
-    public synchronized LinkedList<DataPoint> getMicroClusteringAsDPArray() {
-        LinkedList<DataPoint> microClusterDPArray = new LinkedList<>();
+    public List<DataPoint> getMicroClusteringAsDPArray() {
+        List<DataPoint> microClusterDPArray = new LinkedList<>();
         Clustering microClusters = getMicroClustering();
         for (int i = 0; i < microClusters.size(); i++) {
             DataPoint dp = new DataPoint();

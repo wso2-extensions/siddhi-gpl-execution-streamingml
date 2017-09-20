@@ -30,7 +30,7 @@ import java.util.List;
 public class WeightedKMeans {
     private static final Logger logger = Logger.getLogger(WeightedKMeans.class.getName());
 
-    public static List<Cluster> run(LinkedList<DataPoint> dataPointsArray, int noOfClusters, int maximumIterations,
+    public static List<Cluster> run(List<DataPoint> dataPointsArray, int noOfClusters, int maximumIterations,
                              int noOfDimensions) {
         KMeansModel model = new KMeansModel();
         cluster(dataPointsArray, model, noOfClusters, maximumIterations, noOfDimensions);

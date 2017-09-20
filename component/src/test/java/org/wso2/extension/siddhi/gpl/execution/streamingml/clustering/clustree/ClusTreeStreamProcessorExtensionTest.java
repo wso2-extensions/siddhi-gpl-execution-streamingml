@@ -28,6 +28,8 @@ import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
+import org.wso2.siddhi.core.util.SiddhiTestHelper;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClusTreeStreamProcessorExtensionTest {
@@ -55,25 +57,25 @@ public class ClusTreeStreamProcessorExtensionTest {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
                 EventPrinter.print(inEvents);
-                /*for (Event event: inEvents) {
+                for (Event event: inEvents) {
 
                     count.incrementAndGet();
 
                     switch (count.get()) {
                         case 20:
-                            AssertJUnit.assertArrayEquals(new Double[]{25.3827, 25.2779}, new Object[]{
+                            AssertJUnit.assertArrayEquals(new Double[]{25.0406, 25.3906}, new Object[]{
                                     event.getData(0), event.getData(1)});
                             break;
                         case 21:
-                            AssertJUnit.assertArrayEquals(new Double[]{25.3827, 25.2779}, new Object[]{
+                            AssertJUnit.assertArrayEquals(new Double[]{25.0406, 25.3906}, new Object[]{
                                     event.getData(0), event.getData(1)});
                             break;
                         case 22:
-                            AssertJUnit.assertArrayEquals(new Double[]{4.3327, 6.4196}, new Object[]{
+                            AssertJUnit.assertArrayEquals(new Double[]{4.7675, 6.6013}, new Object[]{
                                     event.getData(0), event.getData(1)});
                             break;
                     }
-                }*/
+                }
             }
         });
 
@@ -103,8 +105,7 @@ public class ClusTreeStreamProcessorExtensionTest {
             inputHandler.send(new Object[]{25.47, 25.8574});
             inputHandler.send(new Object[]{20.2568, 28.7882});
             inputHandler.send(new Object[]{2.9951, 3.9887});
-
-            //SiddhiTestHelper.waitForEvents(200, 3, count, 5000);
+            SiddhiTestHelper.waitForEvents(100, 22, count, 1000);
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
         } finally {
@@ -283,7 +284,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, 8, y) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -305,7 +306,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -327,7 +328,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2.1, 10, 20, 5, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -348,7 +349,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2, 10.3f, 20, 5, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -370,7 +371,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2, 10, 20, 5.4, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -392,7 +393,7 @@ public class ClusTreeStreamProcessorExtensionTest {
         String query = (
                 "@info(name = 'query1') " +
                         "from InputStream#streamingml:clusTree(2, 10, 20, 5.4, 50, x, 3.1f) " +
-                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
                         "insert into OutputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
@@ -401,6 +402,46 @@ public class ClusTreeStreamProcessorExtensionTest {
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
             AssertJUnit.assertTrue(e.getCause().getMessage().contains("maxHeightOfTree should be of type int but " +
                     "found DOUBLE"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_15() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case for incorrect type stream definition");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y String);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, attribute_0, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("model.features in 7th parameter is not a " +
+                    "numerical type attribute. Found STRING. Check the input stream definition."));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_16() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case for testing the robustness of validations " +
+                "when more stream attributes than needed are given");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double, z String);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
         }
     }
 }
