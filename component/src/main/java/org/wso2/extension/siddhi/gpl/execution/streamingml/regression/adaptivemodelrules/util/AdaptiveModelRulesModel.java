@@ -36,7 +36,7 @@ import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 /**
- * AMRules Regressor wrapper class
+ * Represents AMRules Regressor model
  */
 public class AdaptiveModelRulesModel extends AbstractRegressor implements Regressor {
     private static final long serialVersionUID = 1L;

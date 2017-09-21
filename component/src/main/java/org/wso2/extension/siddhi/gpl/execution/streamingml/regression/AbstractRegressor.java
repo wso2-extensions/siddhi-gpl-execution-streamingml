@@ -35,14 +35,14 @@ import java.util.List;
 public abstract class AbstractRegressor extends AbstractOptionHandler {
     protected InstancesHeader streamHeader;
 
-    protected void generateHeader(int noOfFeatures) {
+    protected void generateHeader(int noOfAttributes) {
         List<Attribute> attributes = new ArrayList<Attribute>();
-        for (int i = 0; i < noOfFeatures; i++) {
+        for (int i = 0; i < noOfAttributes; i++) {
             attributes.add(new Attribute("numeric" + (i + 1)));
         }
         streamHeader = new InstancesHeader(new Instances(getCLICreationString(InstanceStream.class),
                 attributes, 0));
-        streamHeader.setClassIndex(streamHeader.numAttributes() - 1);
+        streamHeader.setClassIndex(noOfAttributes - 1);
     }
 
     protected Instance createMOAInstance(double[] cepEvent) {
