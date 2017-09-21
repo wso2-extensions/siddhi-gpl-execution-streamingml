@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util;
+package org.wso2.extension.siddhi.gpl.execution.streamingml.classification;
 
 import com.yahoo.labs.samoa.instances.Instance;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
@@ -25,7 +25,7 @@ import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
  * The Prequential Evaluation task evaluates the performance of online classifiers doing this.
  * Measures the accuracy of the classifier model since the start of the evaluation
  */
-public class PrequentialModelEvaluation {
+public class ClassifierPrequentialModelEvaluation {
     private int numClasses = -1;
 
     private double weightObserved;
@@ -41,7 +41,7 @@ public class PrequentialModelEvaluation {
      * @param inst       MOAInstance representing the cepEvent
      * @param classVotes Prediction votes for each class label
      */
-    void addResult(Instance inst, double[] classVotes) {
+    public void addResult(Instance inst, double[] classVotes) {
         if (this.numClasses == -1) {
             this.reset(inst.numClasses());
         }
@@ -60,7 +60,12 @@ public class PrequentialModelEvaluation {
         }
     }
 
-    double getFractionCorrectlyClassified() {
+    /**
+     * Classification Prequential Evaluation accuracy
+     *
+     * @return
+     */
+    public double getFractionCorrectlyClassified() {
         return this.weightObserved > 0.0D ? this.weightCorrect / this.weightObserved : 0.0D;
     }
 

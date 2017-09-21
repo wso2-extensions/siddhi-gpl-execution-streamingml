@@ -99,10 +99,21 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
+                        <Private-Package>
+                            moa.*,
+                            com.github.*,
+                            com.yahoo.*
+                        </Private-Package>
                         <Export-Package>
-                            org.wso2.extension.siddhi.gpl.execution.streamingml.*,
+                            !moa.*,
+                            !com.github.*,
+                            !com.yahoo.*,
+                            org.wso2.extension.siddhi.gpl.execution.streamingml.*
                         </Export-Package>
                         <Import-Package>
+                            moa.*,
+                            com.github.*,
+                            com.yahoo.*,
                             *;resolution:=optional
                         </Import-Package>
                         <Include-Resource>

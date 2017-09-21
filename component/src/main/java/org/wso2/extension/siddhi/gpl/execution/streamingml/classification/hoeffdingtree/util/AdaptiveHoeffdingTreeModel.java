@@ -22,12 +22,12 @@ import com.yahoo.labs.samoa.instances.Instance;
 import com.yahoo.labs.samoa.instances.Instances;
 import com.yahoo.labs.samoa.instances.InstancesHeader;
 import moa.classifiers.trees.HoeffdingAdaptiveTree;
-import moa.core.FastVector;
 import moa.core.ObjectRepository;
 import moa.options.AbstractOptionHandler;
 import moa.streams.InstanceStream;
 import moa.tasks.TaskMonitor;
 import org.apache.log4j.Logger;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.ClassifierPrequentialModelEvaluation;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
 import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
@@ -113,6 +113,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         } else {
             hoeffdingAdaptiveTree.splitCriterionOption
                     .setValueViaCLIString("GiniSplitCriterion");
+
         }
         hoeffdingAdaptiveTree.splitConfidenceOption.setValue(allowableSplitError);
         hoeffdingAdaptiveTree.tieThresholdOption.setValue(breakTieThreshold);
@@ -140,7 +141,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
      * @param classValue      class label of the cepEvent
      * @return Prequential accuracy
      */
-    public double evaluationTrainOnEvent(PrequentialModelEvaluation modelEvaluation,
+    public double evaluationTrainOnEvent(ClassifierPrequentialModelEvaluation modelEvaluation,
                                          double[] cepEvent, String classValue) {
         int classIndex = cepEvent.length - 1;
 
@@ -182,14 +183,19 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     private InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
-        FastVector headerAttributes = new FastVector();
+        List<Attribute> attributes = new ArrayList<Attribute>();
         for (int i = 0; i < numberOfAttributes - 1; i++) {
-            headerAttributes.addElement(
-                    new Attribute("att_" + i));
+            attributes.add(new Attribute("numeric" + (i + 1)));
         }
-        InstancesHeader streamHeader = new InstancesHeader(new Instances
-                (this.getCLICreationString(InstanceStream.class), headerAttributes, 0));
-        streamHeader.setClassIndex(streamHeader.numAttributes());
+        // Add class value
+        List<String> classLabels = new ArrayList<String>();
+        for (int i = 0; i < this.noOfClasses; i++) {
+            classLabels.add("class" + (i + 1));
+        }
+        attributes.add(new Attribute("class", classLabels));
+        InstancesHeader streamHeader = new InstancesHeader(new Instances(getCLICreationString(InstanceStream.class),
+                attributes, 0));
+        streamHeader.setClassIndex(noOfFeatures - 1);
         return streamHeader;
     }
 

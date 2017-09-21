@@ -33,9 +33,7 @@ import java.util.List;
 public class CoreUtils {
     private static final List<Attribute.Type> numericTypes = Arrays.asList(Attribute.Type.INT,
             Attribute.Type.DOUBLE, Attribute.Type.LONG, Attribute.Type.FLOAT);
-
     private static final List<Attribute.Type> labelTypes = Arrays.asList(Attribute.Type.STRING, Attribute.Type.BOOL);
-
 
     /**
      * Index of the Maximum from double array
@@ -71,7 +69,6 @@ public class CoreUtils {
         return maximum;
     }
 
-
     /**
      * @param inputDefinition
      * @param attributeExpressionExecutors
@@ -99,12 +96,10 @@ public class CoreUtils {
 
                 //feature attributes not numerical type
                 if (!isNumeric(featureAttributeType)) {
-                    throw new SiddhiAppValidationException("model.features in " + (i + 1) + "th parameter is not " +
-                            "a numerical type attribute. Found " +
-                            attributeExpressionExecutors[i].getReturnType()
+                    throw new SiddhiAppValidationException("model.features in " + (i + 1) + "th parameter is not "
+                            + "a numerical type attribute. Found " + attributeExpressionExecutors[i].getReturnType()
                             + ". Check the input stream definition.");
                 }
-
             } else {
                 throw new SiddhiAppValidationException((i + 1) + "th parameter is not " +
                         "an attribute (VariableExpressionExecutor) present in the stream definition. Found a "
@@ -179,6 +174,5 @@ public class CoreUtils {
             initialized = false;
         }
         return initialized;
-
     }
 }
