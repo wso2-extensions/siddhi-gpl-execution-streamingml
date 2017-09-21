@@ -36,10 +36,6 @@ public class KMeansModel implements Serializable {
         clusterList = new LinkedList<>();
     }
 
-    public KMeansModel(List<Cluster> clusterList) {
-        this.clusterList = clusterList;
-    }
-
     public synchronized List<Cluster> getClusterList() {
         return clusterList;
     }
@@ -50,10 +46,6 @@ public class KMeansModel implements Serializable {
 
     public synchronized boolean isTrained() {
         return trained;
-    }
-
-    public synchronized void clear() {
-        clusterList.clear();
     }
 
     public synchronized void clearClusterMembers() {
@@ -81,10 +73,6 @@ public class KMeansModel implements Serializable {
         clusterList.add(c);
     }
 
-    public synchronized void update(int index, double[] x) {
-        clusterList.get(index).getCentroid().setCoordinates(x);
-    }
-
     public synchronized int size() {
         return clusterList.size();
     }
@@ -93,18 +81,6 @@ public class KMeansModel implements Serializable {
         return clusterList.get(index).getCentroid().getCoordinates();
     }
 
-    public synchronized DataPoint getCentroidOfCluster(int index) {
-        return clusterList.get(index).getCentroid();
-    }
-
-    public synchronized int indexOf(DataPoint x) {
-        for (int i = 0; i < clusterList.size(); i++) {
-            if (clusterList.get(i).getCentroid().equals(x)) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
     public synchronized String getModelInfo() {
         StringBuilder s = new StringBuilder();

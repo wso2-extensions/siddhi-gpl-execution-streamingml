@@ -243,4 +243,3 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     protected void prepareForUseImpl(TaskMonitor taskMonitor, ObjectRepository objectRepository) {
     }
 }
-

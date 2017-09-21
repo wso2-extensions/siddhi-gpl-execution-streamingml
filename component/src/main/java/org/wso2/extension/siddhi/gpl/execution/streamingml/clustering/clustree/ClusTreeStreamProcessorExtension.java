@@ -23,6 +23,7 @@ import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.u
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.KMeansModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.Trainer;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
+import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
 import org.wso2.siddhi.annotation.Example;
 import org.wso2.siddhi.annotation.Extension;
 import org.wso2.siddhi.annotation.Parameter;
@@ -254,6 +255,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 maxHeightOfTree = (Integer) ((ConstantExpressionExecutor)
                         attributeExpressionExecutors[3]).getValue();
                 double minHeightOfTree = (Math.log(noOfClusters) / Math.log(3));
+                minHeightOfTree = MathUtil.roundOff(minHeightOfTree, 4);
                 if (maxHeightOfTree < minHeightOfTree) {
                     throw new SiddhiAppCreationException("maxHeightOfTree should be an int greater than " +
                             minHeightOfTree + " but found " + maxHeightOfTree);
@@ -293,7 +295,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
 
         //creating models
         clusTreeModel = new ClusTreeModel();
-        clusTreeModel.init(noOfDimensions, noOfClusters, maxHeightOfTree, horizon);
+        clusTreeModel.init(maxHeightOfTree, horizon);
         kMeansModel = new KMeansModel();
 
         executorService = siddhiAppContext.getExecutorService();
@@ -328,7 +330,7 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 }
 
                 //train the ClusTree Model with the datapoint
-                clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint, null);
+                clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint);
 
                 //train the model periodically
                 if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
