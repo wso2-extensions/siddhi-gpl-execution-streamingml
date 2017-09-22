@@ -54,21 +54,21 @@ import java.util.Map;
 @Extension(
         name = "AMRulesRegressor",
         namespace = "streamingml",
-        description = "Performs Regression task with AMRulesRegressor ",
+        description = "This extension performs regression tasks using the `AMRulesRegressor` algorithm.",
         parameters = {
                 @Parameter(name = "model.name",
                         description = "The name of the model to be used for prediction.",
                         type = {DataType.STRING}),
                 @Parameter(name = "model.feature",
-                        description = "The feature vector for the regression analysis",
+                        description = "The feature vector for the regression analysis.",
                         type = {DataType.INT, DataType.FLOAT, DataType.FLOAT, DataType.DOUBLE}),
         },
         returnAttributes = {
                 @ReturnAttribute(name = "prediction",
-                        description = "Predicted value",
+                        description = "The predicted value.",
                         type = {DataType.DOUBLE}),
                 @ReturnAttribute(name = "meanSquaredError",
-                        description = "MeanSquaredError of the predicting model",
+                        description = "The `MeanSquaredError` of the predicting model.",
                         type = {DataType.DOUBLE})
         },
         examples = {
@@ -79,13 +79,13 @@ import java.util.Map;
                                 + "from StreamA#streamingml:AMRulesRegressor('model1', "
                                 + " attribute_0, attribute_1, attribute_2, attribute_3) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, "
-                                + "prediction, meanSquaredError insert into outputStream;",
-                        description = "An AMRules model with the name 'model1' will be used "
-                                + "to predict the value for the feature vector represented "
-                                + "by attribute_0, attribute_1, attribute_2, attribute_3. "
-                                + "Predicted value along with the MeanSquaredError "
-                                + "and the feature vector will be emitted to the outputStream. "
-                                + "The outputStream will have following definition; "
+                                + "prediction, meanSquaredError insert into OutputStream;",
+                        description = "This query uses an `AMRules` model named `model1` that is used to predict " +
+                                "the value for the feature vector represented by `attribute_0`, `attribute_1`, " +
+                                "`attribute_2`, and `attribute_3`. The predicted value along with the " +
+                                "`MeanSquaredError` and the feature vector are output to a stream named " +
+                                "`OutputStream`. The resulting definition of the `OutputStream` stream is as " +
+                                "follows:\n"
                                 + "(attribute_0 double, attribute_1 double, attribute_2"
                                 + " double, attribute_3 double, prediction double, "
                                 + "meanSquaredError double)."
