@@ -30,6 +30,7 @@ import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.SiddhiTestHelper;
 import org.wso2.siddhi.core.util.persistence.InMemoryPersistenceStore;
+import org.wso2.siddhi.query.api.exception.AttributeNotExistException;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -497,6 +498,100 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.fail("Model is visible across Siddhi Apps which is wrong!");
+        }
+    }
+
+    @Test
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension13() throws InterruptedException {
+        logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
+                + "- configure to build/update an AMRules Regressor mode with non existing stream");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 "
+                + "double, attribute_3 int, attribute_4 double );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:updateAMRulesRegressor('ml', attribute_5 ) "
+                + "select att_0 as attribute_0, "
+                + "att_1 as attribute_1,att_2 as attribute_2,att_3 as attribute_3, accuracy insert into"
+                + " outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition +
+                    query);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            AssertJUnit.assertTrue(e instanceof AttributeNotExistException);
+            AssertJUnit.assertTrue(e.getMessage().contains("Cannot find attribute type as 'attribute_5' " +
+                    "does not exist in 'StreamA'"));
+        }
+    }
+
+    @Test
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension14() throws InterruptedException {
+        logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase - without feature attributes");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 "
+                + "double, attribute_3 int, attribute_4 double );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:updateAMRulesRegressor('ml') "
+                + "select att_0 as attribute_0, "
+                + "att_1 as attribute_1,att_2 as attribute_2,att_3 as attribute_3, accuracy insert into"
+                + " outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition +
+                    query);
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid number of attributes for "
+                    + "streamingml:updateAMRulesRegressor. This Stream Processor requires at least 1 ," +
+                    "parameters namely, model.name and 2 features"));
+        }
+    }
+
+    @Test
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension15() throws InterruptedException {
+        logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase " +
+                "- build/update an AMRules Regressor model with incorrect values for hyper parameters");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 "
+                + "double, attribute_3 int, attribute_4 double );";
+
+        String query = ("@info(name = 'query1') "
+                + "from StreamA#streamingml:updateAMRulesRegressor('model1', 'ml', 0.5, 200, 5, 0, "
+                + "attribute_0, attribute_1 , attribute_2, attribute_3, attribute_4)"
+                + " select attribute_0, attribute_1, attribute_2, attribute_3, meanSquaredError "
+                + "insert into outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Split Confidence must be an DOUBLE. "
+                    + "But found STRING at position 2"));
+        }
+    }
+
+    @Test
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension16() throws InterruptedException {
+        logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase " +
+                "- build/update an AMRules Regressor model with incorrect values for hyper parameters");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 "
+                + "double, attribute_3 int, attribute_4 double );";
+
+        String query = ("@info(name = 'query1') "
+                + "from StreamA#streamingml:updateAMRulesRegressor('model1', 'ml', 0.5, 200, 5, 0, "
+                + "attribute_0, attribute_1 , attribute_2, attribute_3, attribute_4)"
+                + " select attribute_0, attribute_1, attribute_2, attribute_3, meanSquaredError "
+                + "insert into outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Split Confidence must be an DOUBLE. "
+                    + "But found STRING at position 2"));
         }
     }
 }

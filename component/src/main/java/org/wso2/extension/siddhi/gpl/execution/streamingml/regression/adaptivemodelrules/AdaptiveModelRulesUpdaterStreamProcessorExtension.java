@@ -65,13 +65,13 @@ import java.util.Map;
                         type = {DataType.STRING}),
                 @Parameter(name = "split.confidence",
                         description = "Hoeffding Bound Parameter. The allowable error in split decision, "
-                                + "values closer to 0 will take longer to decide.",
+                                + "values closer to 0 will take longer to decide. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "1.0E-7D"),
                 @Parameter(name = "tie.break.threshold",
                         description = "Hoeffding Bound Parameter. Threshold below which a split will be "
-                                + "forced to break ties.",
+                                + "forced to break ties. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "0.05D"),
@@ -207,7 +207,6 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                     + " manual configuration is %s but found %s",
                             noOfHyperParameters, (noOfParameters - minNoOfParameters)));
                 }
-
             }
         } else {
             throw new SiddhiAppValidationException(String.format("Invalid number of attributes for "
