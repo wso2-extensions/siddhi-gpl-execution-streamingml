@@ -29,7 +29,9 @@ import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.SiddhiTestHelper;
+import org.wso2.siddhi.query.compiler.exception.SiddhiParserException;
 
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ClusTreeStreamProcessorExtensionTest {
@@ -547,6 +549,130 @@ public class ClusTreeStreamProcessorExtensionTest {
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
             AssertJUnit.assertTrue(e.getCause().getMessage().contains("horizon should be a positive integer but " +
                     "found -50"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_23() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case with non existing stream");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        //String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 2, -50, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getMessage().contains("definition with ID 'InputStream' has not been defined"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_24() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case with non-numeric event data");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
+
+
+        siddhiAppRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("InputStream");
+        inputHandler.send(new Object[]{5.7905, "hi"});
+    }
+
+    @Test
+    public void testClusTree2D_25() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case with less than 2 params");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
+            AssertJUnit.assertTrue(e.getCause().getMessage().contains("Invalid number of parameters. User can " +
+                    "either choose to give all 4 hyper parameters or none at all. So query can have between 2 or " +
+                    "7 but found 1 parameters"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_26() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case with one empty parameter");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, 10, 20, 2,, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+        } catch (Exception e) {
+            logger.info("Error caught");
+            AssertJUnit.assertTrue(e instanceof SiddhiParserException);
+            AssertJUnit.assertTrue(e.getMessage().contains("Syntax error in SiddhiQL, no viable " +
+                    "alternative at input 'InputStream#streamingml:clusTree(2, 10, 20, 2,,"));
+        }
+    }
+
+    @Test
+    public void testClusTree2D_27() throws Exception {
+        logger.info("ClusTreeStreamProcessorExtension Test - Test case to demo separate thread training");
+        SiddhiManager siddhiManager = new SiddhiManager();
+        String inputStream = "define stream InputStream (x double, y double);";
+
+        String query = (
+                "@info(name = 'query1') " +
+                        "from InputStream#streamingml:clusTree(2, x, y) " +
+                        "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y " +
+                        "insert into OutputStream;");
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inputStream + query);
+
+        siddhiAppRuntime.addCallback("query1", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
+
+        siddhiAppRuntime.start();
+        InputHandler inputHandler = siddhiAppRuntime.getInputHandler("InputStream");
+        Random random = new Random();
+        try {
+            for (int i = 0; i < 1100; i++) {
+                inputHandler.send(new Object[]{random.nextInt(50), random.nextInt(50)});
+                inputHandler.send(new Object[]{random.nextInt(50) + 100, random.nextInt(50) + 100});
+            }
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+        } finally {
+            siddhiAppRuntime.shutdown();
         }
     }
 
