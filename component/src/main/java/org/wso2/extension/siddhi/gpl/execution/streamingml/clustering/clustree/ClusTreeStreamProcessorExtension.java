@@ -58,48 +58,51 @@ import java.util.concurrent.Future;
 @Extension(
         name = "clusTree",
         namespace = "streamingml",
-        description = "Performs clustering on a streaming data set. Initially a micro cluster model is generated " +
-                "using  ClusTree algorithm and weighted k-means is applied on micro clusters periodically to " +
-                "generate a macro cluster model with required number of clusters. Data points can be of any " +
-                "dimensionality but the dimensionality should be constant throughout the stream. Euclidean distance " +
-                "is taken as the distance metric. ",
+        description = "This extension performs clustering on a streaming data set. Initially a micro cluster model " +
+                "is generated using the ClusTree algorithm, and weighted k-means is periodically applied to micro" +
+                " clusters to generate a macro cluster model with the required number of clusters. Data points can " +
+                "be of any dimensionality, but the dimensionality should be constant throughout the stream. " +
+                "Euclidean distance is taken as the distance metric.",
         parameters = {
                 @Parameter(
                         name = "no.of.clusters",
-                        description = "The assumed number of natural clusters (numberOfClusters) in the data set.",
+                        description = "The assumed number of natural clusters (`numberOfClusters`) in the data set.",
                         type = {DataType.INT}
                 ),
                 @Parameter(
                         name = "max.iterations",
-                        description = "Number of iterations, the process iterates until the number of maximum " +
-                                "iterations is reached or the centroids do not change",
+                        description = "The number of times the process should be iterated. The process iterates " +
+                                "until the number specified for this parameter is reached, or until iterating the " +
+                                "process does not result in a change in the centroids.",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "40"
                 ),
                 @Parameter(
                         name = "no.of.events.to.refresh.macro.model",
-                        description = "number of events to recalculate the k-means macro cluster centers. ",
+                        description = "The number of new events that should arrive in order to recalculate the " +
+                                "k-means macro cluster centers.",
                         type = DataType.INT,
                         optional = true,
                         defaultValue = "100"
                 ),
                 @Parameter(
                         name = "max.height.of.tree",
-                        description = "The maximum no of levels in the ClusTree. If it is given as 10 then at most " +
-                                "there can be 3^10 micro clusters in the micro cluster model. Advisable to set " +
-                                "within 5-8 since having a lot of micro-clusters will consume lot of memory and will " +
-                                "take longer to build macro cluster model.",
+                        description = "This defines the maximum number of levels that should exist in the ClusTree." +
+                                " The maximum number of levels is calculated as `3^<VALUE_SPECIFIED>` (e.g., If 10 " +
+                                "is specified, there can be a maximum of 3^10 micro clusters in the micro cluster). " +
+                                "It is recommended to set the value within the 5-8 range because a lot of " +
+                                "micro-clusters can consume a lot of memory, and as a result, creating the macro" +
+                                " cluster model will take longer.",
                         type = DataType.INT,
                         optional = true,
                         defaultValue = "8"
                 ),
                 @Parameter(
                         name = "horizon",
-                        description = "This controls the decay of weights of old micro-clusters. This helps manage " +
-                                "the concept drift. If horizon is set as 1000, then a micro cluster which hasn't " +
-                                "been updated recently will lose its weight by half after 1000 events. Horizon is " +
-                                "technically the half-life of micro-cluster weights.",
+                        description = "This controls the decay of weights of old micro-clusters to manage " +
+                                "the concept drift. If horizon is set as `1000`, then a micro cluster that has not " +
+                                "been recently updated loses its weight by half after 1000 events.",
                         type = DataType.INT,
                         optional = true,
                         defaultValue = "1000"
@@ -107,7 +110,7 @@ import java.util.concurrent.Future;
                 @Parameter(
                         name = "model.features",
                         description = "This is a variable length argument. Depending on the dimensionality of " +
-                                "data points we will receive coordinates as features along each axis.",
+                                "data points, you receive coordinates as features along each axis.",
                         type = {DataType.DOUBLE, DataType.FLOAT, DataType.INT, DataType.LONG}
                 )
 
@@ -115,17 +118,17 @@ import java.util.concurrent.Future;
         returnAttributes = {
                 @ReturnAttribute(
                         name = "euclideanDistanceToClosestCentroid",
-                        description = "Represents the Euclidean distance between the current data point and the " +
+                        description = "This represents the Euclidean distance between the current data point and the " +
                                 "closest centroid.",
                         type = {DataType.DOUBLE}
                 ),
                 @ReturnAttribute(
                         name = "closestCentroidCoordinate",
-                        description = "This is a variable length attribute. Depending on the dimensionality(d) " +
-                                "we will return closestCentroidCoordinate1 to closestCentroidCoordinated which are " +
-                                "the d dimensional coordinates of the closest centroid from the model to the " +
-                                "current event. This is the prediction result and this represents the cluster to" +
-                                "which the current event belongs to.",
+                        description = "This is a variable length attribute. Depending on the dimensionality(`d`) " +
+                                "`closestCentroidCoordinate1` is returned to `closestCentroidCoordinated that are " +
+                                "the `d `dimensional coordinates of the closest centroid from the model to the " +
+                                "current event. This is the prediction result, and this represents the cluster to" +
+                                "which the current event belongs.",
                         type = {DataType.DOUBLE}
                 )
         },
@@ -137,14 +140,15 @@ import java.util.concurrent.Future;
                                 "from InputStream#streamingml:clusTree(2, 10, 20, 5, 50, x, y) \n" +
                                 "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y \n" +
                                 "insert into OutputStream;",
-                        description = "This query will create a Siddhi app named ClusTreeTestSiddhiApp and will " +
-                                "accept 2D inputs of doubles. The query which is named query1 will create a ClusTree " +
-                                "model and will create a kmeans model after firsat 20 events and will " +
-                                "refresh it every 20 events after. Number of macro clusters will be 2 and the " +
-                                "maximum iterations of kmeans to converge will be 10. The max height of tree is " +
-                                "set to 5 so at maximum we will get 3^5 micro clusters from ClusTree and the " +
-                                "horizon is set as 50, so after 50 events micro clusters that were not updated " +
-                                "will lose their weight by half."
+                        description = "This query creates a Siddhi application named `ClusTreeTestSiddhiApp`, and " +
+                                "it accepts 2D inputs of doubles. The query named `query1` creates a ClusTree " +
+                                "model. It also creates a k-means model after the first 20 events, and refreshes it " +
+                                "after every 20 events. Two macro clusters are created, and the process is not " +
+                                "iterated more than 10 times. The maximum height of tree is set to 5, and therefore, " +
+                                "a maximum of 3^5 micro clusters are generated from the Clus Tree. The horizon is set" +
+                                " to 50, and therefore, the weight of each micro cluster that is not updated reduces" +
+                                " by half after every 50 events."
+
                 ),
                 @Example(
                         syntax = "@App:name('ClusTreeTestSiddhiApp') \n" +
@@ -153,9 +157,9 @@ import java.util.concurrent.Future;
                                 "from InputStream#streamingml:ClusTree(2, x, y) \n" +
                                 "select closestCentroidCoordinate1, closestCentroidCoordinate2, x, y \n" +
                                 "insert into OutputStream;",
-                        description = "In this query one can note that the hyper parameters are not given. So they " +
-                                "will be set to their default values which are mentioned above. This mode of " +
-                                "querying is suggested for users who are not familier with ClusTree/KMeans algorithms."
+                        description = "This query does not include hyper parameters. Therefore, the default values " +
+                                "mentioned above are applied. This mode of " +
+                                "querying is recommended if you are not familier with ClusTree/KMeans algorithms."
                 )
         }
 )

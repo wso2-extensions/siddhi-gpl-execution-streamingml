@@ -53,8 +53,8 @@ import java.util.Map;
 @Extension(
         name = "hoeffdingTreeClassifier",
         namespace = "streamingml",
-        description = "Performs classification with Hoeffding Adaptive Tree for evolving "
-                + "data streams that uses ADWIN to replace branches for new ones.",
+        description = "This extension performs classification using the Hoeffding Adaptive Tree algorithm for evolving "
+                + "data streams that use `ADWIN` to replace branches with new ones.",
         parameters = {
                 @Parameter(name = "model.name",
                         description = "The name of the model to be used for prediction.",
@@ -62,10 +62,10 @@ import java.util.Map;
         },
         returnAttributes = {
                 @ReturnAttribute(name = "prediction",
-                        description = "Predicted class label",
+                        description = "The predicted class label.",
                         type = {DataType.STRING}),
                 @ReturnAttribute(name = "confidenceLevel",
-                        description = "Probability of the prediction",
+                        description = "The probability of the prediction.",
                         type = {DataType.DOUBLE})
         },
         examples = {
@@ -76,16 +76,15 @@ import java.util.Map;
                                 + "from StreamA#streamingml:hoeffdingTreeClassifier('model1', "
                                 + " attribute_0, attribute_1, attribute_2, attribute_3) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, "
-                                + "prediction, predictionConfidence insert into outputStream;",
-                        description = "A Hoeffding Tree model with the name 'model1' will be used "
-                                + "to predict the label of the feature vector represented "
-                                + "by attribute_0, attribute_1, attribute_2, attribute_3. "
-                                + "Predicted label (String/Bool) along with the Prediction Confidence "
-                                + "and the feature vector will be emitted to the outputStream. "
-                                + "The outputStream will have following definition; "
-                                + "(attribute_0 double, attribute_1 double, attribute_2"
-                                + " double, attribute_3 double, prediction string, "
-                                + "confidenceLevel double)."
+                                + "prediction, predictionConfidence insert into OutputStream;",
+                        description = "This query uses a Hoeffding Tree model named `model1` to predict the label " +
+                                "of the feature vector represented by `attribute_0`, `attribute_1`, " +
+                                "`attribute_2`, and attribute_3 attributes. The predicted label (`String/Bool`) " +
+                                "along with the prediction confidence and the feature vector are output to the " +
+                                "`OutputStream` stream. The expected definition of the `OutputStream` is as follows:" +
+                                "(attribute_0 double, attribute_1 double, attribute_2\n" +
+                                " double, attribute_3 double, prediction string, \n" +
+                                "confidenceLevel double)."
                 )
         }
 )
