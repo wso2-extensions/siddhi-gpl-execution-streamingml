@@ -160,8 +160,6 @@ import java.util.concurrent.Future;
         }
 )
 public class ClusTreeStreamProcessorExtension extends StreamProcessor {
-    private final int minConstantParams = 1;
-    private final int maxConstantParams = 5;
     private final int separateThreadThreshold = 5000;
     private int noOfClusters;
     private int noOfEventsToRefreshMacroModel = 500;
@@ -178,16 +176,19 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     @Override
     protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
                                    ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+        final int minConstantParams = 1;
+        final int maxConstantParams = 5;
+        final int minNoOfFeatures = 1;
         int maxNoOfFeatures = inputDefinition.getAttributeList().size();
         int maxHeightOfTree = 8;
         int horizon = 1000;
         int attributeStartIndex;
-        if (attributeExpressionLength < minConstantParams || attributeExpressionLength > maxConstantParams +
-                maxNoOfFeatures) {
+        if (attributeExpressionLength < minConstantParams + minNoOfFeatures ||
+                attributeExpressionLength > maxConstantParams + maxNoOfFeatures) {
             throw new SiddhiAppCreationException("Invalid number of parameters. User can either choose to give " +
-                    "all 4 hyper parameters or none at all. So query can have " + (minConstantParams + maxNoOfFeatures)
-                    + " or " + (maxConstantParams + maxNoOfFeatures) + " but found " + attributeExpressionLength +
-                    " parameters.");
+                    "all 4 hyper parameters or none at all. So query can have between " + (minConstantParams +
+                    minNoOfFeatures) + " or " + (maxConstantParams + maxNoOfFeatures) + " but found " +
+                    attributeExpressionLength + " parameters.");
         }
 
         //expressionExecutors[0] --> numberOfClusters
