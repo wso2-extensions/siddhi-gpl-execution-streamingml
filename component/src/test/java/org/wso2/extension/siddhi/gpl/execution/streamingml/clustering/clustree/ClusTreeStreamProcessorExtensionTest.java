@@ -567,8 +567,9 @@ public class ClusTreeStreamProcessorExtensionTest {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(query);
         } catch (Exception e) {
             logger.info("Error caught");
-            AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
-            AssertJUnit.assertTrue(e.getMessage().contains("definition with ID 'InputStream' has not been defined"));
+            AssertJUnit.assertTrue(e instanceof SiddhiParserException);
+            AssertJUnit.assertTrue(e.getMessage().contains("Syntax error in SiddhiQL, no viable alternative at input "
+                    + "'@info(name = query1)"));
         }
     }
 
