@@ -55,56 +55,61 @@ import java.util.Map;
 @Extension(
         name = "updateHoeffdingTree",
         namespace = "streamingml",
-        description = "Performs build/update of Hoeffding Adaptive Tree for evolving "
-                + "data streams that uses ADWIN to replace branches for new ones.",
+        description = "This extension performs the build/update of Hoeffding Adaptive Tree for evolving "
+                + "data streams that use `ADWIN` to replace branches for new ones.",
         parameters = {
                 @Parameter(name = "model.name",
-                        description = "The name of the model to be build/updated.",
+                        description = "The name of the model to be built/updated.",
                         type = {DataType.STRING}),
                 @Parameter(name = "no.of.classes",
-                        description = "The number of Class labels in the datastream.",
+                        description = "The number of class labels in the datastream.",
                         type = {DataType.INT}),
                 @Parameter(name = "grace.period",
-                        description = "The number of instances a leaf should observe between split attempts. "
-                                + "min:0, max:2147483647",
+                        description = "The number of instances a leaf should observe between split attempts. A " +
+                                "minimum and a maximum value should be specified. e.g., `min:0, max:2147483647`.",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "200"),
                 @Parameter(name = "split.criterion",
-                        description = "Split criterion to use. 0:InfoGainSplitCriterion, 1:GiniSplitCriterion",
+                        description = "The split criterion to be used. Possible values are as follows:\n" +
+                                "`0`:InfoGainSplitCriterion\n" +
+                                "`1`:GiniSplitCriterion",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "0:InfoGainSplitCriterion"),
                 @Parameter(name = "split.confidence",
-                        description = "The allowable error in split decision, values closer to 0 will take "
-                                + "longer to decide.",
+                        description = "The amount of error that should be allowed in a split decision. When the" +
+                                " value specified is closer to 0, it takes longer to output the decision.",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "1e-7"),
                 @Parameter(name = "tie.break.threshold",
-                        description = "Threshold below which a split will be forced to break ties. "
-                                + "min:0.0D, max:1.0D",
+                        description = "The threshold at which a split must be forced to break ties. A minimum value " +
+                                "and a maximum value must be specified. e.g., `min:0.0D, max:1.0D`",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "0.05D"),
                 @Parameter(name = "binary.split",
-                        description = "Only allow binary splits.",
+                        description = "If this parameter is set to `true`, onlybinary splits are allowed.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "pre.prune",
-                        description = "Disable pre-pruning",
+                        description = "If this parameter is set to `true`, pre-pruning is allowed.",
                         type = {DataType.BOOL},
                         optional = true,
                         defaultValue = "false"),
                 @Parameter(name = "leaf.prediction.strategy",
-                        description = "Leaf prediction to use. "
-                                + "0:Majority class, 1:Naive Bayes, 2:Naive Bayes Adaptive.",
+                        description = "This specifies the leaf prediction strategy to be used. Possible values are " +
+                                "as follows:\n" +
+                                "`0`:Majority class \n" +
+                                "`1`:Naive Bayes\n" +
+                                "`2`:Naive Bayes Adaptive.",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "2:Naive Bayes Adaptive"),
                 @Parameter(name = "model.features",
-                        description = "Features of the model which should be attributes of the stream.",
+                        description = "The features of the model that should be attributes of the stream.",
                         type = {DataType.DOUBLE, DataType.INT})
         },
         returnAttributes = {
@@ -119,11 +124,11 @@ import java.util.Map;
                                 + "\n"
                                 + "from StreamA#streamingml:updateHoeffdingTree('model1', 3) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, "
-                                + "accuracy insert into outputStream;",
-                        description = "A HoeffdingTree model with the name 'model1' will be built/updated under "
-                                + "3 number of classes using attribute_0, attribute_1, attribute_2, attribute_3 "
-                                + "as features and attribute_4 as the label. The accuracy evaluation will be "
-                                + "emitted to the outputStream"
+                                + "accuracy insert into OutputStream;",
+                        description = "This query builds/updates a HoeffdingTree model named `model1` under "
+                                + "3 classes using `attribute_0`, `attribute_1`, `attribute_2`, and `attribute_3` as" +
+                                " features, and `attribute_4` as the label. The accuracy evaluation is output to " +
+                                "the `OutputStream` stream"
                 ),
                 @Example(
                         syntax = "define stream StreamA (attribute_0 double, attribute_1 double, "
@@ -132,14 +137,14 @@ import java.util.Map;
                                 + "from StreamA#streamingml:updateHoeffdingTree('model1', 3, 200, 0, 1e-7, 1.0D, "
                                 + "true, true, 2) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, "
-                                + "accuracy insert into outputStream;",
-                        description = "A Hoeffding Tree model with the name 'model1' will be "
-                                + "built/updated with a grace period of 200, InformationGain Split criterion,"
-                                + "1e-7 of allowable error in split decision, 1.0D of breaktie threshold, "
-                                + "allowing only binary splits, disabled pre-pruning, Naive Bayes Adaptive as"
-                                + "leaf prediction using attribute_0, attribute_1, attribute_2, attribute_3 as "
-                                + "features and attribute_4 as the label. The accuracy evaluation will be "
-                                + "emitted to the outputStream."
+                                + "accuracy insert into OutputStream;",
+                        description = "This query builds/updates a Hoeffding Tree model named `model1` with a " +
+                                "grace period of 200, an information gain split criterion of 0, 1e-7 of allowable " +
+                                "error in split decision, 1.0D of breaktie threshold, allowing only binary splits. " +
+                                "Pre-pruning is disabled, and `Naive Bayes Adaptive` is used as the leaf prediction " +
+                                "strategy. 'attribute_0', `attribute_1`, `attribute_2`, and `attribute_3` are used as "
+                                + "features, and `attribute_4` as the label. The accuracy evaluation is output to " +
+                                "the OutputStream stream."
                 )
         }
 )

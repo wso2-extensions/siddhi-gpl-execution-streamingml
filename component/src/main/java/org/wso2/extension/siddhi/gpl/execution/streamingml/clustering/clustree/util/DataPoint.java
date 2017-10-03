@@ -18,7 +18,6 @@
 package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util;
 
 import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
-
 import java.io.Serializable;
 import java.util.Arrays;
 

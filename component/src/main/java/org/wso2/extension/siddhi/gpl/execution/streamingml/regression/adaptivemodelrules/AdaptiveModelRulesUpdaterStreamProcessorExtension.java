@@ -56,45 +56,52 @@ import java.util.Map;
 @Extension(
         name = "updateAMRulesRegressor",
         namespace = "streamingml",
-        description = "Performs build/update of AMRules Regressor model for evolving "
-                + "data streams.",
+        description = "This extension performs the build/update of the AMRules Regressor model for evolving data " +
+                "streams.",
 
         parameters = {
                 @Parameter(name = "model.name",
-                        description = "The name of the model to be build/updated.",
+                        description = "The name of the model to be built/updated.",
                         type = {DataType.STRING}),
                 @Parameter(name = "split.confidence",
-                        description = "Hoeffding Bound Parameter. The allowable error in split decision, "
-                                + "values closer to 0 will take longer to decide. min:0 max:1",
+                        description = "This is a Hoeffding Bound parameter.  It defines the percentage of error that " +
+                                "to be allowed in a split decision. When the value specified is closer to 0, it takes" +
+                                " longer to output the decision. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "1.0E-7D"),
                 @Parameter(name = "tie.break.threshold",
-                        description = "Hoeffding Bound Parameter. Threshold below which a split will be "
-                                + "forced to break ties. min:0 max:1",
+                        description = "This is a Hoeffding Bound parameter. It specifies the threshold below which a " +
+                                "split must be forced to break ties. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "0.05D"),
                 @Parameter(name = "grace.period",
-                        description = "Hoeffding Bound Parameter. The number of instances a leaf should "
+                        description = "This is a Hoeffding Bound parameter. The number of instances a leaf should "
                                 + "observe between split attempts.",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "200"),
                 @Parameter(name = "change.detector",
-                        description = "Concept Drift detection methodology. "
-                                + "0:NoChangeDetection, 1:ADWINChangeDetector, 2:PageHinkleyDM",
+                        description = " The Concept Drift Detection methodology to be used. The possible values " +
+                                "are as follows.\n " +
+                                "`0`:NoChangeDetection\n" +
+                                "`1`:ADWINChangeDetector \n " +
+                                "`2`:PageHinkleyDM",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "2:PageHinkleyDM"),
                 @Parameter(name = "anomaly.detector",
-                        description = "Anomaly Detection Methodology. "
-                                + "0:NoAnomalyDetection, 1:AnomalinessRatioScore, 2:OddsRatioScore",
+                        description = "The Anomaly Detection methodology to be used. The possible values are as " +
+                                "follows:" +
+                                "`0`:NoAnomalyDetection\n" +
+                                "`1`:AnomalinessRatioScore\n" +
+                                "`2`:OddsRatioScore",
                         type = {DataType.INT},
                         optional = true,
                         defaultValue = "2:OddsRatioScore"),
                 @Parameter(name = "model.features",
-                        description = "Features of the model which should be attributes of the stream.",
+                        description = "The features of the model that should be attributes of the stream.",
                         type = {DataType.DOUBLE, DataType.FLOAT, DataType.LONG, DataType.INT})
         },
         returnAttributes = {
@@ -109,11 +116,11 @@ import java.util.Map;
                                 + "\n"
                                 + "from StreamA#streamingml:updateAMRulesRegressor('model1',) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, "
-                                + "meanSquaredError insert into outputStream;",
-                        description = "An AMRulesRegressor model with the name 'model1' will be built/updated under "
-                                + "using attribute_0, attribute_1, attribute_2, attribute_3 "
-                                + "as features and attribute_4 as the target_value. The accuracy evaluation will be "
-                                + "emitted to the outputStream"
+                                + "meanSquaredError insert into OutputStream;",
+                        description = "In this query, an AMRulesRegressor model named 'model1' is built/updated using" +
+                                " `attribute_0`, `attribute_1`, `attribute_2`, and `attribute_3` attributes as " +
+                                "features, and `attribute_4` as the target_value. The accuracy of the evaluation is " +
+                                "output to the OutputStream stream."
                 ),
                 @Example(
                         syntax = "define stream StreamA (attribute_0 double, attribute_1 double, "
@@ -122,13 +129,14 @@ import java.util.Map;
                                 + "from StreamA#streamingml:updateAMRulesRegressor('model1', 1.0E-7D, 0.05D, 200,"
                                 + " 0, 0) \n"
                                 + "select attribute_0, attribute_1, attribute_2, attribute_3, meanSquaredError "
-                                + "insert into outputStream;",
-                        description = "An AMRulesRegressor model with the name 'model1' will be "
-                                + "built/updated with a split confidence of 1.0E-7D, tie break threshold of 0.05D, "
-                                + "a grace period of 200, NoChangeDetection and NoAnomalyDetection "
-                                + "using attribute_0, attribute_1, attribute_2, attribute_3 as "
-                                + "features and attribute_4 as the target value. The meanSquaredError will be "
-                                + "emitted to the outputStream."
+                                + "insert into OutputStream;",
+                        description = "In this query, an `AMRulesRegressor` model named `model1` is built/updated " +
+                                "with a split confidence of 1.0E-7D, a tie break threshold of 0.05D, and a grace " +
+                                "period of 200. The Concept Drift Detection and Anomaly Detection methodologies " +
+                                "used are `NoChangeDetection` and `NoAnomalyDetection` respectively. `attribute_0`, " +
+                                "`attribute_1`, `attribute_2`, and `attribute_3` are used as features, and " +
+                                "`attribute_4` is used as the target value. The `meanSquaredError` is output to the" +
+                                " `OutputStream` stream."
                 )
         }
 )
@@ -207,6 +215,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                                     + " manual configuration is %s but found %s",
                             noOfHyperParameters, (noOfParameters - minNoOfParameters)));
                 }
+
             }
         } else {
             throw new SiddhiAppValidationException(String.format("Invalid number of attributes for "
