@@ -66,13 +66,13 @@ import java.util.Map;
                 @Parameter(name = "split.confidence",
                         description = "This is a Hoeffding Bound parameter.  It defines the percentage of error that " +
                                 "to be allowed in a split decision. When the value specified is closer to 0, it takes" +
-                                " longer to output the decision.",
+                                " longer to output the decision. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "1.0E-7D"),
                 @Parameter(name = "tie.break.threshold",
                         description = "This is a Hoeffding Bound parameter. It specifies the threshold below which a " +
-                                "split must be forced to break ties.",
+                                "split must be forced to break ties. min:0 max:1",
                         type = {DataType.DOUBLE},
                         optional = true,
                         defaultValue = "0.05D"),

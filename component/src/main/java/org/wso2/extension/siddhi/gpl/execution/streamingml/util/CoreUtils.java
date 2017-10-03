@@ -109,7 +109,6 @@ public class CoreUtils {
         return featureVariableExpressionExecutors;
     }
 
-
     public static boolean isNumeric(Attribute.Type attributeType) {
         return numericTypes.contains(attributeType);
     }
@@ -117,7 +116,6 @@ public class CoreUtils {
     public static boolean isLabelType(Attribute.Type attributeType) {
         return labelTypes.contains(attributeType);
     }
-
 
     /**
      * @param inputDefinition

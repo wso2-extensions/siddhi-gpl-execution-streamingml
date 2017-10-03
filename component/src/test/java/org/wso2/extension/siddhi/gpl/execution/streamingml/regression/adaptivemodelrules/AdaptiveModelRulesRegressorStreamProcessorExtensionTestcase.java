@@ -25,10 +25,12 @@ import org.wso2.siddhi.core.SiddhiAppRuntime;
 import org.wso2.siddhi.core.SiddhiManager;
 import org.wso2.siddhi.core.event.Event;
 import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
+import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
 import org.wso2.siddhi.core.query.output.callback.QueryCallback;
 import org.wso2.siddhi.core.stream.input.InputHandler;
 import org.wso2.siddhi.core.util.EventPrinter;
 import org.wso2.siddhi.core.util.SiddhiTestHelper;
+import org.wso2.siddhi.query.api.exception.AttributeNotExistException;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -350,4 +352,68 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtensionTestcase {
             siddhiAppRuntime.shutdown();
         }
     }
+
+    @Test
+    public void testRegressionStreamProcessorExtension11() throws InterruptedException {
+        logger.info("RegressionLearningStreamProcessorExtension TestCase "
+                + "- configure an AMRules Regressor mode with non existing stream");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, attribute_2 "
+                + "double, attribute_3 int, attribute_4 double );";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('ml', attribute_5 ) "
+                + "select att_0 as attribute_0, "
+                + "att_1 as attribute_1,att_2 as attribute_2,att_3 as attribute_3, accuracy insert into"
+                + " outputStream;");
+        try {
+            SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition +
+                    query);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            AssertJUnit.assertTrue(e instanceof AttributeNotExistException);
+            AssertJUnit.assertTrue(e.getMessage().contains("Cannot find attribute type as 'attribute_5' " +
+                    "does not exist in 'StreamA'"));
+        }
+    }
+
+    @Test
+    public void testRegressionStreamProcessorExtension12() throws InterruptedException {
+        logger.info("RegressionLearningStreamProcessorExtension TestCase " +
+                "- Send non defined data type values after building an AMRules Regressor model");
+        SiddhiManager siddhiManager = new SiddhiManager();
+
+        String inStreamDefinition = "define stream StreamA (attribute_0 double, attribute_1 double, "
+                + "attribute_2 double, attribute_3 double);";
+        String query = ("@info(name = 'query1') from StreamA#streamingml:AMRulesRegressor('ml', "
+                + " attribute_0, attribute_1, attribute_2, attribute_3) "
+                + "select attribute_0, attribute_1, attribute_2, attribute_3, prediction, meanSquaredError "
+                + "insert into outputStream;");
+
+        SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(trainingStream + inStreamDefinition
+                + trainingQuery + query);
+        try {
+            InputHandler inputHandler = siddhiAppRuntime.getInputHandler("StreamTrain");
+            siddhiAppRuntime.start();
+            inputHandler.send(new Object[]{27.36, 48.6, 1003.18, 54.93, 436.06});
+            inputHandler.send(new Object[]{14.6, 39.31, 1011.11, 72.52, 464.16});
+            inputHandler.send(new Object[]{7.91, 39.96, 1023.57, 88.44, 475.52});
+            inputHandler.send(new Object[]{5.81, 35.79, 1012.14, 92.28, 484.41});
+            inputHandler.send(new Object[]{30.53, 65.18, 1012.69, 41.85, 437.89});
+
+            Thread.sleep(1100);
+
+            InputHandler inputHandler1 = siddhiAppRuntime.getInputHandler("StreamA");
+            // send some unseen data for prediction
+            inputHandler1.send(new Object[]{14.96, "string", 1024.07, 73.17});
+        } catch (Exception e) {
+            logger.error(e.getCause().getMessage());
+            AssertJUnit.assertTrue(e instanceof SiddhiAppRuntimeException);
+            AssertJUnit.assertTrue(e.getMessage().contains("Incompatible attribute feature type at position 2. "
+                    + "Not of any numeric type. Please refer the stream definition of "
+                    + "Model[AmRulesRegressorTestApp.ml]"));
+        } finally {
+            siddhiAppRuntime.shutdown();
+        }
+    }
+
 }
