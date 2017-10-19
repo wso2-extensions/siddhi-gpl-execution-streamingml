@@ -45,13 +45,15 @@
     </profiles>
 
     <properties>
-        <siddhi.version>4.0.0-M89</siddhi.version>
+        <siddhi.version>4.0.0-M107</siddhi.version>
         <log4j.version>1.2.17.wso2v1</log4j.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <slf4j-version>1.7.5</slf4j-version>
         <testng.version>6.8</testng.version>
         <jacoco.version>0.7.9</jacoco.version>
         <moa.version>2017.06</moa.version>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <scm>
@@ -114,12 +116,6 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.jacoco</groupId>
-                <artifactId>org.jacoco.agent</artifactId>
-                <classifier>runtime</classifier>
-                <version>${jacoco.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons-lang3.version}</version>
@@ -169,22 +165,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <encoding>UTF-8</encoding>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.wso2.siddhi</groupId>
-                <artifactId>siddhi-doc-gen</artifactId>
-                <version>${siddhi.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-md-docs</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
 
