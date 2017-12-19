@@ -346,6 +346,9 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                     } else {
                         Trainer trainer = new Trainer(kMeansModel, dpa, noOfClusters, maxIterations, noOfDimensions);
                         Future f = executorService.submit(trainer);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Is train the model periodically done: " + f.isDone());
+                        }
                     }
                 }
 
