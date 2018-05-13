@@ -152,9 +152,9 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
 
     private static final Logger logger = Logger.getLogger(HoeffdingClassifierUpdaterStreamProcessorExtension.class);
 
-    private static final int minNoOfFeatures = 3;
-    private static final int minNoOfParameters = 2;
-    private static final int noOfHyperParameters = 7;
+    private static final int MINIMUM_NUMBER_OF_FEATURES = 3;
+    private static final int MINIMUM_NUMBER_OF_PARAMETERS = 2;
+    private static final int NUMBER_OF_HYPER_PARAMETERS = 7;
 
     private int noOfFeatures;
     private int noOfParameters;
@@ -176,7 +176,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
         noOfParameters = attributeExpressionLength - noOfFeatures;
         int classIndex = attributeExpressionLength - 1;
 
-        if (attributeExpressionLength >= minNoOfParameters + minNoOfFeatures) {
+        if (attributeExpressionLength >= MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES) {
             if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
                 ConstantExpressionExecutor modelNameExecutor =
                         (ConstantExpressionExecutor) attributeExpressionExecutors[0];
@@ -239,9 +239,9 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                 }
                 model.init(noOfFeatures, noOfClasses);
             }
-            if (noOfParameters > minNoOfParameters) {
+            if (noOfParameters > MINIMUM_NUMBER_OF_PARAMETERS) {
                 //configuation with hyper-parameters
-                if (noOfParameters == (minNoOfParameters + noOfHyperParameters)) {
+                if (noOfParameters == (MINIMUM_NUMBER_OF_PARAMETERS + NUMBER_OF_HYPER_PARAMETERS)) {
                     //configuring hoeffding tree model with hyper-parameters
                     if (logger.isDebugEnabled()) {
                         logger.debug("Hoeffding Adaptive Tree is configured with hyper-parameters");
@@ -250,7 +250,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                 } else {
                     throw new SiddhiAppValidationException(String.format("Number of hyper-parameters needed for model"
                                     + " manual configuration is %s but found %s",
-                            noOfHyperParameters, (noOfParameters - minNoOfParameters)));
+                            NUMBER_OF_HYPER_PARAMETERS, (noOfParameters - MINIMUM_NUMBER_OF_PARAMETERS)));
                 }
 
             }
@@ -261,7 +261,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                             + "streamingml:updateHoeffdingTree. This Stream Processor requires at least %s ,"
                             + "parameters namely, model.name, number_of_classes and %s features but found %s "
                             + "parameters and %s features",
-                    minNoOfParameters, minNoOfFeatures, (attributeExpressionLength - noOfFeatures), noOfFeatures));
+                    MINIMUM_NUMBER_OF_PARAMETERS, MINIMUM_NUMBER_OF_FEATURES, (attributeExpressionLength - noOfFeatures), noOfFeatures));
         }
         //set attributes for OutputStream
         List<Attribute> attributes = new ArrayList<>();
@@ -316,7 +316,7 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
         boolean prePruning = false;
         int leafPredictionStrategy = 2;
 
-        int parameterPosition = minNoOfParameters;
+        int parameterPosition = MINIMUM_NUMBER_OF_PARAMETERS;
 
         List<String> hyperParameters = new ArrayList<>();
         hyperParameters.add("GracePeriod");
@@ -418,12 +418,12 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                 }
             } else {
                 throw new SiddhiAppValidationException(String.format("%s must be (ConstantExpressionExecutor) "
-                                + "but found %s in position %s.", hyperParameters.get(i - minNoOfParameters),
+                                + "but found %s in position %s.", hyperParameters.get(i - MINIMUM_NUMBER_OF_PARAMETERS),
                         attributeExpressionExecutors[i].getClass().getCanonicalName(), (i + 1)));
             }
         }
 
-        if (parameterPosition == (noOfHyperParameters + minNoOfParameters)) {
+        if (parameterPosition == (NUMBER_OF_HYPER_PARAMETERS + MINIMUM_NUMBER_OF_PARAMETERS)) {
             AdaptiveHoeffdingTreeModel model = AdaptiveHoeffdingModelsHolder.getInstance()
                     .getHoeffdingModel(modelName);
             model.setConfigurations(gracePeriod, splittingCriteria, allowableSplitError,
@@ -431,8 +431,8 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
 
         } else {
             throw new SiddhiAppValidationException("Number of hyper-parameters needed for model "
-                    + "manual configuration is " + noOfHyperParameters + " but found "
-                    + (parameterPosition - minNoOfParameters));
+                    + "manual configuration is " + NUMBER_OF_HYPER_PARAMETERS + " but found "
+                    + (parameterPosition - MINIMUM_NUMBER_OF_PARAMETERS));
         }
     }
 

@@ -89,8 +89,8 @@ import java.util.Map;
         }
 )
 public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor {
-    private static final int minNoOfFeatures = 2;
-    private static final int minNoOfParameters = 1;
+    private static final int MINIMUM_NUMBER_OF_FEATURES = 2;
+    private static final int MINIMUM_NUMBER_OF_PARAMETERS = 1;
 
     private String modelName;
     private int noOfFeatures;
@@ -105,18 +105,18 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
         String modelPrefix;
         noOfFeatures = inputDefinition.getAttributeList().size();
 
-        if (attributeExpressionExecutors.length >= (minNoOfFeatures + minNoOfParameters)) {
-            if (noOfFeatures < minNoOfFeatures) {
+        if (attributeExpressionExecutors.length >= (MINIMUM_NUMBER_OF_FEATURES + MINIMUM_NUMBER_OF_PARAMETERS)) {
+            if (noOfFeatures < MINIMUM_NUMBER_OF_FEATURES) {
                 throw new SiddhiAppValidationException(String.format("Invalid number of feature attributes for "
                                 + "streamingml:hoeffdingTreeClassifier. This Stream Processor requires at least %s "
                                 + "feature attributes, but found %s feature attributes",
-                        minNoOfFeatures, noOfFeatures));
+                        MINIMUM_NUMBER_OF_FEATURES, noOfFeatures));
             }
-            if (noOfFeatures != (attributeExpressionLength - minNoOfParameters)) {
+            if (noOfFeatures != (attributeExpressionLength - MINIMUM_NUMBER_OF_PARAMETERS)) {
                 throw new SiddhiAppValidationException(String.format("Invalid number of feature attributes for "
                                 + "streamingml:hoeffdingTreeClassifier. This Stream Processor is defined with %s "
                                 + "features, but found %s feature attributes",
-                        noOfFeatures, (attributeExpressionLength - minNoOfParameters)));
+                        noOfFeatures, (attributeExpressionLength - MINIMUM_NUMBER_OF_PARAMETERS)));
             }
             if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
                 if (attributeExpressionExecutors[0].getReturnType() == Attribute.Type.STRING) {
@@ -154,7 +154,7 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
                             + "streamingml:hoeffdingTreeClassifier. This Stream Processor requires "
                             + "at least %s parameters, namely, model.name and at least %s feature_attributes,"
                             + " but found %s parameters",
-                    (minNoOfParameters + minNoOfFeatures), minNoOfFeatures, attributeExpressionExecutors.length));
+                    (MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES), MINIMUM_NUMBER_OF_FEATURES, attributeExpressionExecutors.length));
         }
         //set attributes for Output Stream
         List<Attribute> attributes = new ArrayList<Attribute>();

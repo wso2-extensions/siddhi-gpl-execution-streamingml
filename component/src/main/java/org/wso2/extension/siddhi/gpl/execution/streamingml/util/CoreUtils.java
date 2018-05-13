@@ -38,16 +38,16 @@ public class CoreUtils {
     /**
      * Index of the Maximum from double array
      *
-     * @param doubles
+     * @param doubleArray - array of doubles
      * @return index of the maximum
      */
-    public static int argMaxIndex(double[] doubles) {
+    public static int argMaxIndex(double[] doubleArray) {
         double maximum = 0.0D;
         int maxIndex = 0;
-        for (int i = 0; i < doubles.length; ++i) {
-            if (i == 0 || doubles[i] > maximum) {
+        for (int i = 0; i < doubleArray.length; ++i) {
+            if (i == 0 || doubleArray[i] > maximum) {
                 maxIndex = i;
-                maximum = doubles[i];
+                maximum = doubleArray[i];
             }
         }
         return maxIndex;
