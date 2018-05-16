@@ -142,9 +142,9 @@ import java.util.Map;
 public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamProcessor {
     private static final Logger logger = Logger.getLogger(AdaptiveModelRulesUpdaterStreamProcessorExtension.class);
 
-    private static final int minNoOfFeatures = 2;
-    private static final int minNoOfParameters = 1;
-    private static final int noOfHyperParameters = 5;
+    private static final int MINIMUM_NUMBER_OF_FEATURES = 2;
+    private static final int MINIMUM_NUMBER_OF_PARAMETERS = 1;
+    private static final int NUMBER_OF_HYPERPARAMETERS = 5;
 
     private int noOfAttributes;
     private int noOfParameters;
@@ -161,7 +161,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
         noOfAttributes = inputDefinition.getAttributeList().size();
         noOfParameters = attributeExpressionLength - noOfAttributes;
 
-        if (attributeExpressionLength >= minNoOfParameters + minNoOfFeatures) {
+        if (attributeExpressionLength >= MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES) {
             if (attributeExpressionExecutors[0] instanceof ConstantExpressionExecutor) {
                 ConstantExpressionExecutor modelNameExecutor =
                         (ConstantExpressionExecutor) attributeExpressionExecutors[0];
@@ -180,7 +180,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                         + attributeExpressionExecutors[0].getClass().getCanonicalName());
             }
 
-            if (noOfAttributes > minNoOfFeatures) {
+            if (noOfAttributes > MINIMUM_NUMBER_OF_FEATURES) {
                 featureVariableExpressionExecutors = CoreUtils
                         .extractAndValidateFeatures(inputDefinition, attributeExpressionExecutors,
                                 (attributeExpressionLength - noOfAttributes), noOfAttributes);
@@ -201,9 +201,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                 model.init(noOfAttributes);
             }
             cepEvent = new double[noOfAttributes];
-            if (noOfParameters > minNoOfParameters) {
+            if (noOfParameters > MINIMUM_NUMBER_OF_PARAMETERS) {
                 //configuation with hyper-parameters
-                if (noOfParameters == (minNoOfParameters + noOfHyperParameters)) {
+                if (noOfParameters == (MINIMUM_NUMBER_OF_PARAMETERS + NUMBER_OF_HYPERPARAMETERS)) {
                     //configuring AMRules Regressor model with hyper-parameters
                     if (logger.isDebugEnabled()) {
                         logger.debug("AMRules Regressor model is configured with hyper-parameters");
@@ -212,7 +212,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                 } else {
                     throw new SiddhiAppValidationException(String.format("Number of hyper-parameters needed for model"
                                     + " manual configuration is %s but found %s",
-                            noOfHyperParameters, (noOfParameters - minNoOfParameters)));
+                            NUMBER_OF_HYPERPARAMETERS, (noOfParameters - MINIMUM_NUMBER_OF_PARAMETERS)));
                 }
 
             }
@@ -220,7 +220,8 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
             throw new SiddhiAppValidationException(String.format("Invalid number of attributes for "
                             + "streamingml:updateAMRulesRegressor. This Stream Processor requires at least %s ,"
                             + "parameters namely, model.name and %s features but found %s parameters and %s features",
-                    minNoOfParameters, minNoOfFeatures, (attributeExpressionLength - noOfAttributes), noOfAttributes));
+                    MINIMUM_NUMBER_OF_PARAMETERS, MINIMUM_NUMBER_OF_FEATURES,
+                    (attributeExpressionLength - noOfAttributes), noOfAttributes));
         }
         //set attributes for OutputStream
         List<Attribute> attributes = new ArrayList<>();
@@ -236,7 +237,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
         int changeDetector = 2;
         int anomalyDetector = 2;
 
-        int parameterPosition = minNoOfParameters;
+        int parameterPosition = MINIMUM_NUMBER_OF_PARAMETERS;
 
         List<String> hyperParameters = new ArrayList<>();
         hyperParameters.add("Split Confidence");
@@ -309,18 +310,18 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                 }
             } else {
                 throw new SiddhiAppValidationException(String.format("%s must be (ConstantExpressionExecutor) "
-                                + "but found %s in position %s.", hyperParameters.get(i - minNoOfParameters),
+                                + "but found %s in position %s.", hyperParameters.get(i - MINIMUM_NUMBER_OF_PARAMETERS),
                         attributeExpressionExecutors[i].getClass().getCanonicalName(), (i + 1)));
             }
         }
-        if (parameterPosition == (noOfHyperParameters + minNoOfParameters)) {
+        if (parameterPosition == (NUMBER_OF_HYPERPARAMETERS + MINIMUM_NUMBER_OF_PARAMETERS)) {
             AdaptiveModelRulesModel model = RegressorModelHolder.getInstance()
                     .getAMRulesRegressorModel(modelName);
             model.setConfigurations(splitConfidence, tieBreakThreshold, gracePeriod, changeDetector, anomalyDetector);
         } else {
             throw new SiddhiAppValidationException("Number of hyper-parameters needed for model "
-                    + "manual configuration is " + noOfHyperParameters + " but found "
-                    + (parameterPosition - minNoOfParameters));
+                    + "manual configuration is " + NUMBER_OF_HYPERPARAMETERS + " but found "
+                    + (parameterPosition - MINIMUM_NUMBER_OF_PARAMETERS));
         }
     }
 

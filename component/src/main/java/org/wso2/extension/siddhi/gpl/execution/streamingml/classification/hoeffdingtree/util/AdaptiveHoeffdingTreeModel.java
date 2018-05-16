@@ -40,7 +40,7 @@ import java.util.List;
  * Represents the Hoeffding Adaptive Tree Model
  */
 public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
-    private static final long SERIAL_VERSION_UID = 1L;
+    private static final long serialVersionUID = 1L;
     private static final Logger LOGGER = Logger.getLogger(AdaptiveHoeffdingTreeModel.class);
 
     private String modelName;

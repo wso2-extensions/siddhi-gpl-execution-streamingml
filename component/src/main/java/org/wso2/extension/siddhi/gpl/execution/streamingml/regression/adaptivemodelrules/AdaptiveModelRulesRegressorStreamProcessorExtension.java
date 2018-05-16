@@ -199,6 +199,5 @@ public class AdaptiveModelRulesRegressorStreamProcessorExtension extends StreamP
 
     @Override
     public void restoreState(Map<String, Object> map) {
-
     }
 }
