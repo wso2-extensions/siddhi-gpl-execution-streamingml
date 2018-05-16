@@ -40,8 +40,8 @@ import java.util.List;
  * Represents the Hoeffding Adaptive Tree Model
  */
 public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
-    private static final long serialVersionUID = 1L;
-    private static final Logger logger = Logger.getLogger(AdaptiveHoeffdingTreeModel.class);
+    private static final long SERIAL_VERSION_UID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(AdaptiveHoeffdingTreeModel.class);
 
     private String modelName;
     private InstancesHeader streamHeader;
@@ -52,7 +52,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
 
     @Override
     public void getDescription(StringBuilder stringBuilder, int i) {
-        logger.info("Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace "
+        LOGGER.info("Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace "
                 + "branches for new ones.");
     }
 
@@ -76,8 +76,8 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
      * @param noOfClasses    number of classes
      */
     public void init(int noOfAttributes, int noOfClasses) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Model [%s] is being initialized.", this.modelName));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Model [%s] is being initialized.", this.modelName));
         }
         this.noOfFeatures = noOfAttributes;
         this.noOfClasses = noOfClasses;
@@ -103,8 +103,8 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
                                   double allowableSplitError, double breakTieThreshold,
                                   boolean binarySplitOption, boolean disablePrePruning,
                                   int leafpredictionStrategy) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Model [%s] is being configured with hyper-parameters.", this.modelName));
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(String.format("Model [%s] is being configured with hyper-parameters.", this.modelName));
         }
         hoeffdingAdaptiveTree.gracePeriodOption.setValue(gracePeriod);
         if (splittingCriteria == 0) {
@@ -113,17 +113,16 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         } else {
             hoeffdingAdaptiveTree.splitCriterionOption
                     .setValueViaCLIString("GiniSplitCriterion");
-
         }
         hoeffdingAdaptiveTree.splitConfidenceOption.setValue(allowableSplitError);
         hoeffdingAdaptiveTree.tieThresholdOption.setValue(breakTieThreshold);
         hoeffdingAdaptiveTree.binarySplitsOption.setValue(binarySplitOption);
         hoeffdingAdaptiveTree.noPrePruneOption.setValue(disablePrePruning);
         hoeffdingAdaptiveTree.leafpredictionOption.setChosenIndex(leafpredictionStrategy);
-
     }
 
     /**
+     * Train the model on event instance
      * @param cepEvent   event data
      * @param classLabel class  label of the cepEvent
      */
@@ -136,6 +135,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     /**
+     * Calculate prequential accuracy of the model
      * @param modelEvaluation Prequential Model Evaluator.
      * @param cepEvent        event data
      * @param classValue      class label of the cepEvent
@@ -148,18 +148,16 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         //create instance with only the feature attributes
         double[] test = Arrays.copyOfRange(cepEvent, 0, classIndex);
         Instance testInstance = createMOAInstance(test);
-
         double[] votes = hoeffdingAdaptiveTree.getVotesForInstance(testInstance);
-
         cepEvent[classIndex] = getClasses().indexOf(classValue);
         Instance trainInstance = createMOAInstance(cepEvent);
-
         hoeffdingAdaptiveTree.trainOnInstanceImpl(trainInstance);
         modelEvaluation.addResult(trainInstance, votes);
         return MathUtil.roundOff(modelEvaluation.getFractionCorrectlyClassified(), 3);
     }
 
     /**
+     * Predict the class label for event with fearure attributes
      * @param cepEvent Event data.
      * @return predicted class index, probability of the prediction.
      */
@@ -172,6 +170,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     /**
+     * Convert CEP event into MOA instance
      * @param cepEvent Event Data
      * @return represents a single Event
      */
@@ -182,6 +181,11 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         return instance;
     }
 
+    /**
+     * Create MOAInstance schema
+     * @param numberOfAttributes
+     * @return Schema for MOAInstances
+     */
     private InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
         List<Attribute> attributes = new ArrayList<Attribute>();
         for (int i = 0; i < numberOfAttributes - 1; i++) {
@@ -199,6 +203,11 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         return streamHeader;
     }
 
+    /**
+     * Add a Class label
+     * @param label
+     * @return
+     */
     private int addClass(String label) {
         // Set class value
         if (classes.contains(label)) {
@@ -210,12 +219,12 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
             } else {
                 throw new SiddhiAppRuntimeException(String.format("Number of classes %s is expected from the model "
                         + "%s but found %s", noOfClasses, modelName, classes.size()));
-
             }
         }
     }
 
     /**
+     * Calculate prediction confidence
      * @param votes-Vote prediction for the class labels
      * @return Prediction confidence to the 3rd decimal point
      */
