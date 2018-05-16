@@ -136,14 +136,11 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
                 throw new SiddhiAppValidationException("Parameter model.name must be a constant but found "
                         + attributeExpressionExecutors[0].getClass().getCanonicalName());
             }
-
             featureVariableExpressionExecutors = CoreUtils
                     .extractAndValidateFeatures(inputDefinition, attributeExpressionExecutors,
                             (attributeExpressionLength - noOfFeatures), noOfFeatures);
-
             AdaptiveHoeffdingTreeModel model
                     = AdaptiveHoeffdingModelsHolder.getInstance().getHoeffdingModel(modelName);
-
             if (!CoreUtils.isInitialized(model, (noOfFeatures + 1))) {
                 throw new SiddhiAppValidationException(String.format("Model [%s] needs to initialized "
                         + "prior to be used with streamingml:hoeffdingTreeClassifier. "

@@ -229,10 +229,8 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                         "Number of features must be greater than 2 but" + " found "
                                 + noOfFeatures);
             }
-
             AdaptiveHoeffdingTreeModel model
                     = AdaptiveHoeffdingModelsHolder.getInstance().getHoeffdingModel(modelName);
-
             if (!CoreUtils.isInitialized(model, noOfFeatures)) {
                 if (logger.isDebugEnabled()) {
                     logger.debug(String.format("Model [%s] has not been initialized.", modelName));
@@ -288,10 +286,8 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                                 + "for Model[%s]", (i + 1), modelName));
                     }
                 }
-
                 AdaptiveHoeffdingTreeModel model = AdaptiveHoeffdingModelsHolder.getInstance()
                         .getHoeffdingModel(modelName);
-
                 double accuracy;
                 if (model.getClasses().size() == noOfClasses) {
                     accuracy = model.evaluationTrainOnEvent(evolutionModel, cepEvent, classValue);
@@ -303,7 +299,6 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
             }
             nextProcessor.process(streamEventChunk);
         }
-
     }
 
     private void configureModelWithHyperParameters(String modelName) {
@@ -428,7 +423,6 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                     .getHoeffdingModel(modelName);
             model.setConfigurations(gracePeriod, splittingCriteria, allowableSplitError,
                     tieBreakThreshold, binarySplit, prePruning, leafPredictionStrategy);
-
         } else {
             throw new SiddhiAppValidationException("Number of hyper-parameters needed for model "
                     + "manual configuration is " + NUMBER_OF_HYPER_PARAMETERS + " but found "
