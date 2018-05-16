@@ -36,7 +36,7 @@ public class CoreUtils {
     private static final List<Attribute.Type> labelTypes = Arrays.asList(Attribute.Type.STRING, Attribute.Type.BOOL);
 
     /**
-     * Index of the Maximum from double array
+     * Get index of the Maximum from double array
      * @param doubleArray - array of doubles
      * @return index of the maximum
      */
@@ -53,7 +53,7 @@ public class CoreUtils {
     }
 
     /**
-     * Maximum value from the double array
+     * Get maximum value from the double array
      * @param doubleArray - array of doubles
      * @return maximum value of the double array
      */

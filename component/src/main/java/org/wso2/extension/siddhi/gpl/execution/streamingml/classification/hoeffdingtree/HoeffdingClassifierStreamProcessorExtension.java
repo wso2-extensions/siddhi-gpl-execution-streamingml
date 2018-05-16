@@ -104,7 +104,6 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
         String siddhiAppName = siddhiAppContext.getName();
         String modelPrefix;
         noOfFeatures = inputDefinition.getAttributeList().size();
-
         if (attributeExpressionExecutors.length >= (MINIMUM_NUMBER_OF_FEATURES + MINIMUM_NUMBER_OF_PARAMETERS)) {
             if (noOfFeatures < MINIMUM_NUMBER_OF_FEATURES) {
                 throw new SiddhiAppValidationException(String.format("Invalid number of feature attributes for "
@@ -150,8 +149,8 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
             throw new SiddhiAppValidationException(String.format("Invalid number of parameters for "
                             + "streamingml:hoeffdingTreeClassifier. This Stream Processor requires "
                             + "at least %s parameters, namely, model.name and at least %s feature_attributes,"
-                            + " but found %s parameters",
-                    (MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES), MINIMUM_NUMBER_OF_FEATURES, attributeExpressionExecutors.length));
+                            + " but found %s parameters", (MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES),
+                    MINIMUM_NUMBER_OF_FEATURES, attributeExpressionExecutors.length));
         }
         //set attributes for Output Stream
         List<Attribute> attributes = new ArrayList<Attribute>();
@@ -192,7 +191,6 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
 
     @Override
     public void start() {
-
     }
 
     @Override
@@ -211,8 +209,7 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
     @Override
     public void restoreState(Map<String, Object> state) {
         AdaptiveHoeffdingModelsHolder.getInstance().
-                setHoeffdingModelMap((Map<String, AdaptiveHoeffdingTreeModel>) state.get
-                        ("AdaptiveHoeffdingModelsMap"));
+                setHoeffdingModelMap((Map<String, AdaptiveHoeffdingTreeModel>) state.
+                        get("AdaptiveHoeffdingModelsMap"));
     }
-
 }

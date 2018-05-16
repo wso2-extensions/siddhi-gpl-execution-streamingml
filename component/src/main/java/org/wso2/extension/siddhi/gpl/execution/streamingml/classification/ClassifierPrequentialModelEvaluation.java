@@ -68,6 +68,4 @@ public class ClassifierPrequentialModelEvaluation {
     public double getFractionCorrectlyClassified() {
         return this.weightObserved > 0.0D ? this.weightCorrect / this.weightObserved : 0.0D;
     }
-
-
 }

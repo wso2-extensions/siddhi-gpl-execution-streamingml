@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 WSO2 Inc. (http://wso2.com)
+ * Copyright (C) 2017 WSO2 Inc. (http://wso2.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,4 @@ public class AdaptiveHoeffdingModelsHolder {
         }
         return clonedMap;
     }
-
-
 }

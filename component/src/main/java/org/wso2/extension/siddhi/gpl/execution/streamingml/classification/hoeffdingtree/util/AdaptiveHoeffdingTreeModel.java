@@ -87,7 +87,6 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         this.hoeffdingAdaptiveTree.prepareForUse();
     }
 
-
     /**
      * Configure Hoeffding Adaptive Tree Model with hyper-parameters.
      *
@@ -144,7 +143,6 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     public double evaluationTrainOnEvent(ClassifierPrequentialModelEvaluation modelEvaluation,
                                          double[] cepEvent, String classValue) {
         int classIndex = cepEvent.length - 1;
-
         //create instance with only the feature attributes
         double[] test = Arrays.copyOfRange(cepEvent, 0, classIndex);
         Instance testInstance = createMOAInstance(test);
