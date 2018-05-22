@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     private static final long serialVersionUID = 1L;
-    private static final Logger LOGGER = Logger.getLogger(AdaptiveHoeffdingTreeModel.class);
+    private static final Logger logger = Logger.getLogger(AdaptiveHoeffdingTreeModel.class);
 
     private String modelName;
     private InstancesHeader streamHeader;
@@ -52,7 +52,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
 
     @Override
     public void getDescription(StringBuilder stringBuilder, int i) {
-        LOGGER.info("Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace "
+        logger.info("Hoeffding Adaptive Tree for evolving data streams that uses ADWIN to replace "
                 + "branches for new ones.");
     }
 
@@ -76,8 +76,8 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
      * @param noOfClasses    number of classes
      */
     public void init(int noOfAttributes, int noOfClasses) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Model [%s] is being initialized.", this.modelName));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Model [%s] is being initialized.", this.modelName));
         }
         this.noOfFeatures = noOfAttributes;
         this.noOfClasses = noOfClasses;
@@ -102,8 +102,8 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
                                   double allowableSplitError, double breakTieThreshold,
                                   boolean binarySplitOption, boolean disablePrePruning,
                                   int leafpredictionStrategy) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(String.format("Model [%s] is being configured with hyper-parameters.", this.modelName));
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Model [%s] is being configured with hyper-parameters.", this.modelName));
         }
         hoeffdingAdaptiveTree.gracePeriodOption.setValue(gracePeriod);
         if (splittingCriteria == 0) {

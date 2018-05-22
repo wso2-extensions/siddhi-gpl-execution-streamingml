@@ -150,7 +150,7 @@ import java.util.Map;
 )
 public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamProcessor {
 
-    private static final Logger LOGGER = Logger.getLogger(HoeffdingClassifierUpdaterStreamProcessorExtension.class);
+    private static final Logger logger = Logger.getLogger(HoeffdingClassifierUpdaterStreamProcessorExtension.class);
 
     private static final int MINIMUM_NUMBER_OF_FEATURES = 3;
     private static final int MINIMUM_NUMBER_OF_PARAMETERS = 2;
@@ -232,8 +232,8 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
             AdaptiveHoeffdingTreeModel model
                     = AdaptiveHoeffdingModelsHolder.getInstance().getHoeffdingModel(modelName);
             if (!CoreUtils.isInitialized(model, noOfFeatures)) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(String.format("Model [%s] has not been initialized.", modelName));
+                if (logger.isDebugEnabled()) {
+                    logger.debug(String.format("Model [%s] has not been initialized.", modelName));
                 }
                 model.init(noOfFeatures, noOfClasses);
             }
@@ -241,8 +241,8 @@ public class HoeffdingClassifierUpdaterStreamProcessorExtension extends StreamPr
                 //configuation with hyper-parameters
                 if (noOfParameters == (MINIMUM_NUMBER_OF_PARAMETERS + NUMBER_OF_HYPER_PARAMETERS)) {
                     //configuring hoeffding tree model with hyper-parameters
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Hoeffding Adaptive Tree is configured with hyper-parameters");
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Hoeffding Adaptive Tree is configured with hyper-parameters");
                     }
                     configureModelWithHyperParameters(modelName);
                 } else {
