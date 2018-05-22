@@ -1,19 +1,18 @@
 /*
- * Copyright (c) 2017, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (C) 2017 WSO2 Inc. (http://wso2.com)
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
@@ -134,15 +133,13 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
             inputHandler.send(new Object[]{6.1, 2.8, 4.7, 1.2, 7});
 
             SiddhiTestHelper.waitForEvents(200, 5, count, 60000);
-        } catch (Exception e) {
-            logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
         }
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension3() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension3() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
                 + "- Target value is not of type double");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -156,6 +153,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
                 + " outputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -206,8 +204,6 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
 
             SiddhiTestHelper.waitForEvents(200, 5, count, 60000);
 
-        } catch (Exception e) {
-            logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
         }
@@ -215,7 +211,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
 
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension5() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension5() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
                 + "- number of parameters not accepted");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -230,6 +226,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
 
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -286,15 +283,13 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
             inputHandler.send(new Object[]{5.7, 2.5, 5, 2, 9});
 
             SiddhiTestHelper.waitForEvents(200, 12, count, 60000);
-        } catch (Exception e) {
-            logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
         }
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension7() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension7() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
                 + "- Features are of un-supported type");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -308,6 +303,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
 
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -317,7 +313,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension8() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension8() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase - incorrect initialization");
         SiddhiManager siddhiManager = new SiddhiManager();
 
@@ -330,6 +326,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition +
                     query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -340,7 +337,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension9() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension9() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
                 + "- number of parameters not accepted");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -354,6 +351,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
                 + " outputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -435,15 +433,13 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
             inputHandler.send(new Object[]{27.38, 74.16, 1010.08, 78.61, 436.65});
 
             SiddhiTestHelper.waitForEvents(200, 9, count, 60000);
-        } catch (Exception e) {
-            logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
         }
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension11() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension11() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase " +
                 "- Hyperparameter not type ConstantExecutor");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -459,6 +455,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
                 + "insert into outputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -469,7 +466,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension12() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension12() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase - model is visible only "
                 + "within the SiddhiApp");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -502,7 +499,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension13() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension13() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase "
                 + "- configure to build/update an AMRules Regressor mode with non existing stream");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -525,7 +522,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension14() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension14() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase - without feature attributes");
         SiddhiManager siddhiManager = new SiddhiManager();
 
@@ -538,6 +535,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition +
                     query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -548,7 +546,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension15() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension15() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase " +
                 "- build/update an AMRules Regressor model with incorrect values for hyper parameters");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -563,6 +561,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
                 + "insert into outputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);
@@ -572,7 +571,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
     }
 
     @Test
-    public void testUpdateUpdateRegressionLearningStreamProcessorExtension16() throws InterruptedException {
+    public void testUpdateUpdateRegressionLearningStreamProcessorExtension16() {
         logger.info("UpdateUpdateRegressionLearningStreamProcessorExtension TestCase " +
                 "- build/update an AMRules Regressor model with incorrect values for hyper parameters");
         SiddhiManager siddhiManager = new SiddhiManager();
@@ -587,6 +586,7 @@ public class AdaptiveModelRulesRegressorUpdaterStreamProcessorExtensionTestcase 
                 + "insert into outputStream;");
         try {
             SiddhiAppRuntime siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(inStreamDefinition + query);
+            AssertJUnit.fail();
         } catch (Exception e) {
             logger.error(e.getCause().getMessage());
             AssertJUnit.assertTrue(e instanceof SiddhiAppCreationException);

@@ -20,7 +20,14 @@ package org.wso2.extension.siddhi.gpl.execution.streamingml.util;
  * Special mathematical functions used in the ML algorithms.
  */
 public class MathUtil {
+
+    /**
+     * Calculate sum of double array
+     * @param val double array
+     * @return sum of values in the array
+     */
     public static double sum(double[] val) {
+
         double sum = 0;
         for (double x : val) {
             sum += x;
@@ -29,28 +36,31 @@ public class MathUtil {
     }
 
     /**
-     * @param value  double value
-     * @param places number of decimal points
+     * Round-off a value to a given number of decimal points
+     * @param value         double value
+     * @param decimalPlaces number of decimal points
      * @return
      */
-    public static double roundOff(double value, int places) {
-        if (places < 0) {
-            throw new IllegalArgumentException();
+    public static double roundOff(double value, int decimalPlaces) {
+
+        if (decimalPlaces < 0) {
+            throw new IllegalArgumentException("Invalid value for decimalPlaces parameter. It should be 0 or " +
+                    "a positive integer. But found " + decimalPlaces);
         }
-        long factor = (long) Math.pow(10, places);
+        long factor = (long) Math.pow(10, decimalPlaces);
         value = value * factor;
         long tmp = Math.round(value);
         return (double) tmp / factor;
     }
 
     /**
-     * finds the euclidean distance between two input points of equal dimension
-     *
+     * Calculate the euclidean distance between two input points of equal dimension
      * @param point1 input point one
      * @param point2 input point two
      * @return euclidean distance between point1 and point2
      */
     public static double euclideanDistance(double[] point1, double[] point2) {
+
         double sum = 0.0;
         int dimensionality = point1.length;
         for (int i = 0; i < dimensionality; i++) {

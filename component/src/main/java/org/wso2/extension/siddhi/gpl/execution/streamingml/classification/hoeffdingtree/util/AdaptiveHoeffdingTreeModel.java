@@ -87,7 +87,6 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         this.hoeffdingAdaptiveTree.prepareForUse();
     }
 
-
     /**
      * Configure Hoeffding Adaptive Tree Model with hyper-parameters.
      *
@@ -113,17 +112,16 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         } else {
             hoeffdingAdaptiveTree.splitCriterionOption
                     .setValueViaCLIString("GiniSplitCriterion");
-
         }
         hoeffdingAdaptiveTree.splitConfidenceOption.setValue(allowableSplitError);
         hoeffdingAdaptiveTree.tieThresholdOption.setValue(breakTieThreshold);
         hoeffdingAdaptiveTree.binarySplitsOption.setValue(binarySplitOption);
         hoeffdingAdaptiveTree.noPrePruneOption.setValue(disablePrePruning);
         hoeffdingAdaptiveTree.leafpredictionOption.setChosenIndex(leafpredictionStrategy);
-
     }
 
     /**
+     * Train the model on event instance
      * @param cepEvent   event data
      * @param classLabel class  label of the cepEvent
      */
@@ -136,6 +134,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     /**
+     * Calculate prequential accuracy of the model
      * @param modelEvaluation Prequential Model Evaluator.
      * @param cepEvent        event data
      * @param classValue      class label of the cepEvent
@@ -144,22 +143,19 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     public double evaluationTrainOnEvent(ClassifierPrequentialModelEvaluation modelEvaluation,
                                          double[] cepEvent, String classValue) {
         int classIndex = cepEvent.length - 1;
-
         //create instance with only the feature attributes
         double[] test = Arrays.copyOfRange(cepEvent, 0, classIndex);
         Instance testInstance = createMOAInstance(test);
-
         double[] votes = hoeffdingAdaptiveTree.getVotesForInstance(testInstance);
-
         cepEvent[classIndex] = getClasses().indexOf(classValue);
         Instance trainInstance = createMOAInstance(cepEvent);
-
         hoeffdingAdaptiveTree.trainOnInstanceImpl(trainInstance);
         modelEvaluation.addResult(trainInstance, votes);
         return MathUtil.roundOff(modelEvaluation.getFractionCorrectlyClassified(), 3);
     }
 
     /**
+     * Predict the class label for event with fearure attributes
      * @param cepEvent Event data.
      * @return predicted class index, probability of the prediction.
      */
@@ -172,6 +168,7 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
     }
 
     /**
+     * Convert CEP event into MOA instance
      * @param cepEvent Event Data
      * @return represents a single Event
      */
@@ -182,6 +179,11 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         return instance;
     }
 
+    /**
+     * Create MOAInstance schema
+     * @param numberOfAttributes
+     * @return Schema for MOAInstances
+     */
     private InstancesHeader createMOAInstanceHeader(int numberOfAttributes) {
         List<Attribute> attributes = new ArrayList<Attribute>();
         for (int i = 0; i < numberOfAttributes - 1; i++) {
@@ -199,6 +201,11 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
         return streamHeader;
     }
 
+    /**
+     * Add a Class label
+     * @param label
+     * @return
+     */
     private int addClass(String label) {
         // Set class value
         if (classes.contains(label)) {
@@ -210,12 +217,12 @@ public class AdaptiveHoeffdingTreeModel extends AbstractOptionHandler {
             } else {
                 throw new SiddhiAppRuntimeException(String.format("Number of classes %s is expected from the model "
                         + "%s but found %s", noOfClasses, modelName, classes.size()));
-
             }
         }
     }
 
     /**
+     * Calculate prediction confidence
      * @param votes-Vote prediction for the class labels
      * @return Prediction confidence to the 3rd decimal point
      */

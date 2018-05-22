@@ -36,45 +36,44 @@ public class CoreUtils {
     private static final List<Attribute.Type> labelTypes = Arrays.asList(Attribute.Type.STRING, Attribute.Type.BOOL);
 
     /**
-     * Index of the Maximum from double array
-     *
-     * @param doubles
+     * Get index of the Maximum from double array
+     * @param doubleArray - array of doubles
      * @return index of the maximum
      */
-    public static int argMaxIndex(double[] doubles) {
+    public static int argMaxIndex(double[] doubleArray) {
         double maximum = 0.0D;
         int maxIndex = 0;
-        for (int i = 0; i < doubles.length; ++i) {
-            if (i == 0 || doubles[i] > maximum) {
+        for (int i = 0; i < doubleArray.length; ++i) {
+            if (i == 0 || doubleArray[i] > maximum) {
                 maxIndex = i;
-                maximum = doubles[i];
+                maximum = doubleArray[i];
             }
         }
         return maxIndex;
     }
 
     /**
-     * Maximum from the double array
-     *
-     * @param doubles
-     * @return
+     * Get maximum value from the double array
+     * @param doubleArray - array of doubles
+     * @return maximum value of the double array
      */
-    public static double argMax(double[] doubles) {
+    public static double argMax(double[] doubleArray) {
         double maximum = 0.0D;
-        for (int i = 0; i < doubles.length; ++i) {
-            if (i == 0 || doubles[i] > maximum) {
-                maximum = doubles[i];
+        for (int i = 0; i < doubleArray.length; ++i) {
+            if (i == 0 || doubleArray[i] > maximum) {
+                maximum = doubleArray[i];
             }
         }
         return maximum;
     }
 
     /**
-     * @param inputDefinition
-     * @param attributeExpressionExecutors
-     * @param startIndex                   starting index
-     * @param noOfFeatures
-     * @return
+     * Validate and extract feature attribute executors
+     * @param inputDefinition the incoming stream definition
+     * @param attributeExpressionExecutors the executors of each function parameters
+     * @param startIndex starting index of the feature attributes
+     * @param noOfFeatures number of feature attributes
+     * @return list of executors of feature attribute parameters
      */
     public static List<VariableExpressionExecutor> extractAndValidateFeatures(
             AbstractDefinition inputDefinition, ExpressionExecutor[]
@@ -118,10 +117,11 @@ public class CoreUtils {
     }
 
     /**
-     * @param inputDefinition
-     * @param attributeExpressionExecutors
-     * @param classIndex
-     * @return
+     * Validate and extract class label attribute executor
+     * @param inputDefinition the incoming stream definition
+     * @param attributeExpressionExecutors the executors of each function parameters
+     * @param classIndex index of the class label
+     * @return executor of class label parameter
      */
     public static VariableExpressionExecutor extractAndValidateClassLabel
     (AbstractDefinition inputDefinition, ExpressionExecutor[] attributeExpressionExecutors, int classIndex) {
@@ -153,9 +153,10 @@ public class CoreUtils {
     }
 
     /**
-     * @param model
-     * @param noOfFeatures
-     * @return
+     * Check whether the model is initialized
+     * @param model Instance of AdaptiveHoeffdingTree model
+     * @param noOfFeatures Number of feature attributes used to train the model
+     * @return true/false
      */
     public static boolean isInitialized(AdaptiveHoeffdingTreeModel model, int noOfFeatures) {
         boolean initialized;
