@@ -1,17 +1,30 @@
-site_name: Siddhi-Execution-StreamingML
+site_name: Siddhi Gpl Execution StreamingML
+site_description: Siddhi Gpl Execution StreamingML Extension
+site_author: WSO2
+site_url: https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/
 extra_css:
 - stylesheets/extra.css
 extra_javascript:
 - javascripts/extra.js
-site_favicon: images/favicon.ico
-extra:
+repo_name: Siddhi-Gpl-Execution-StreamingML
+repo_url: https://github.com/wso2-extensions/siddhi-gpl-execution-streamingml
+copyright: Copyright &copy; 2011 - 2018 WSO2
+theme:
+  name: 'material'
   logo: images/siddhi-logo-w.svg
+  favicon: images/favicon.ico
   palette:
     primary: teal
     accent: teal
 google_analytics:
 - UA-103065-28
 - auto
+extra:
+  social:
+  - type: github
+    link: https://github.com/wso2/siddhi
+  - type: linkedin
+    link: https://www.linkedin.com/groups/13553064
 pages:
 - Welcome to WSO2 Siddhi GPL Execution StreamingML: index.md
 - API Docs:
