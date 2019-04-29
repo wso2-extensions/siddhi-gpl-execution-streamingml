@@ -17,6 +17,31 @@
 
 package org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.ReturnAttribute;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.exception.SiddhiAppCreationException;
+import io.siddhi.core.exception.SiddhiAppRuntimeException;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.ClusTreeModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.DataPoint;
@@ -24,26 +49,7 @@ import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.u
 import org.wso2.extension.siddhi.gpl.execution.streamingml.clustering.clustree.util.Trainer;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.ReturnAttribute;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.exception.SiddhiAppCreationException;
-import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -163,23 +169,28 @@ import java.util.concurrent.Future;
                 )
         }
 )
-public class ClusTreeStreamProcessorExtension extends StreamProcessor {
+public class ClusTreeStreamProcessorExtension extends StreamProcessor<ClusTreeStreamProcessorExtension.ExtensionState> {
     private final int separateThreadThreshold = 5000;
     private int noOfClusters;
     private int noOfEventsToRefreshMacroModel = 500;
     private int noOfDimensions;
     private int maxIterations = 40;
     private double[] coordinateValuesOfCurrentDataPoint;
-    private int noOfEventsReceived;
+
     private ExecutorService executorService;
-    private ClusTreeModel clusTreeModel;
-    private KMeansModel kMeansModel;
+
     private List<VariableExpressionExecutor> featureVariableExpressionExecutors = new LinkedList<>();
     private static final Logger logger = Logger.getLogger(ClusTreeStreamProcessorExtension.class.getName());
+    //setting return attributes
+    List<Attribute> attributeList;
 
     @Override
-    protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
-                                   ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent, AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
         final int minConstantParams = 1;
         final int maxConstantParams = 5;
         final int minNoOfFeatures = 1;
@@ -298,29 +309,27 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
         featureVariableExpressionExecutors = CoreUtils.extractAndValidateFeatures(inputDefinition,
                 attributeExpressionExecutors, attributeStartIndex, noOfDimensions);
 
-        //creating models
-        clusTreeModel = new ClusTreeModel();
+        ClusTreeModel clusTreeModel = new ClusTreeModel();
         clusTreeModel.init(maxHeightOfTree, horizon);
-        kMeansModel = new KMeansModel();
 
-        executorService = siddhiAppContext.getExecutorService();
+        executorService = siddhiQueryContext.getSiddhiAppContext().getExecutorService();
 
-        //setting return attributes
-        List<Attribute> attributeList = new ArrayList<>(1 + noOfDimensions);
+        attributeList = new ArrayList<>(1 + noOfDimensions);
         attributeList.add(new Attribute("euclideanDistanceToClosestCentroid", Attribute.Type.DOUBLE));
         for (int i = 1; i <= noOfDimensions; i++) {
             attributeList.add(new Attribute("closestCentroidCoordinate" + i, Attribute.Type.DOUBLE));
         }
-        return attributeList;
+        return () -> new ExtensionState(clusTreeModel);
     }
 
     @Override
-    protected void process(ComplexEventChunk<StreamEvent> complexEventChunk, Processor processor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> complexEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
         synchronized (this) {
             while (complexEventChunk.hasNext()) {
                 StreamEvent streamEvent = complexEventChunk.next();
-                noOfEventsReceived++;
+                state.noOfEventsReceived++;
 
                 //validating and getting coordinate values
                 for (int i = 0; i < noOfDimensions; i++) {
@@ -335,16 +344,17 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 }
 
                 //train the ClusTree Model with the datapoint
-                clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint);
+                state.clusTreeModel.trainOnEvent(coordinateValuesOfCurrentDataPoint);
 
                 //train the model periodically
-                if (noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
-                    List<DataPoint> dpa = clusTreeModel.getMicroClusteringAsDPArray();
+                if (state.noOfEventsReceived % noOfEventsToRefreshMacroModel == 0) {
+                    List<DataPoint> dpa = state.clusTreeModel.getMicroClusteringAsDPArray();
                     if (noOfEventsToRefreshMacroModel < separateThreadThreshold) {
-                        kMeansModel.refresh(dpa, noOfClusters, maxIterations,
+                        state.kMeansModel.refresh(dpa, noOfClusters, maxIterations,
                                 noOfDimensions);
                     } else {
-                        Trainer trainer = new Trainer(kMeansModel, dpa, noOfClusters, maxIterations, noOfDimensions);
+                        Trainer trainer = new Trainer(state.kMeansModel, dpa, noOfClusters, maxIterations,
+                                noOfDimensions);
                         Future f = executorService.submit(trainer);
                         if (logger.isDebugEnabled()) {
                             logger.debug("Is train the model periodically done: " + f.isDone());
@@ -353,17 +363,18 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
                 }
 
                 //make prediction if the model is trained
-                if (kMeansModel.isTrained()) {
+                if (state.kMeansModel.isTrained()) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Populating the event with the prediction");
                     }
                     complexEventPopulater.populateComplexEvent(streamEvent,
-                            kMeansModel.getPrediction(coordinateValuesOfCurrentDataPoint));
+                            state.kMeansModel.getPrediction(coordinateValuesOfCurrentDataPoint));
                 }
             }
         }
         nextProcessor.process(complexEventChunk);
     }
+
 
     @Override
     public void start() {
@@ -376,23 +387,49 @@ public class ClusTreeStreamProcessorExtension extends StreamProcessor {
     }
 
     @Override
-    public Map<String, Object> currentState() {
-        synchronized (this) {
-            Map<String, Object> map = new HashMap();
-            map.put("noOfEventsReceived", noOfEventsReceived);
-            map.put("clusTreeModel", clusTreeModel);
-            map.put("kMeansModel", kMeansModel);
-            return map;
-
-        }
+    public List<Attribute> getReturnAttributes() {
+        return attributeList;
     }
 
     @Override
-    public void restoreState(Map<String, Object> map) {
-        synchronized (this) {
-            noOfEventsReceived = (Integer) map.get("noOfEventsReceived");
-            clusTreeModel = (ClusTreeModel) map.get("clusTreeModel");
-            kMeansModel = (KMeansModel) map.get("kMeansModel");
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.BATCH;
+    }
+
+    class ExtensionState extends State {
+        private ClusTreeModel clusTreeModel;
+        private KMeansModel kMeansModel;
+        private int noOfEventsReceived;
+
+        private ExtensionState(ClusTreeModel clusTreeModel) {
+           this.clusTreeModel = clusTreeModel;
+           kMeansModel = new KMeansModel();
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            synchronized (ClusTreeStreamProcessorExtension.this) {
+                Map<String, Object> map = new HashMap();
+                map.put("noOfEventsReceived", noOfEventsReceived);
+                map.put("clusTreeModel", clusTreeModel);
+                map.put("kMeansModel", kMeansModel);
+                return map;
+
+            }
+        }
+
+        @Override
+        public void restore(Map<String, Object> map) {
+            synchronized (ClusTreeStreamProcessorExtension.this) {
+                noOfEventsReceived = (Integer) map.get("noOfEventsReceived");
+                clusTreeModel = (ClusTreeModel) map.get("clusTreeModel");
+                kMeansModel = (KMeansModel) map.get("kMeansModel");
+            }
         }
     }
 }

@@ -16,32 +16,37 @@
  */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.ReturnAttribute;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEvent;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.exception.SiddhiAppRuntimeException;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.Regressor;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.RegressorModelHolder;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules.util.AdaptiveModelRulesModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.ReturnAttribute;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEvent;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,7 +144,8 @@ import java.util.Map;
                 )
         }
 )
-public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamProcessor {
+public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends
+        StreamProcessor<AdaptiveModelRulesUpdaterStreamProcessorExtension.ExtensionState> {
     private static final Logger logger = Logger.getLogger(AdaptiveModelRulesUpdaterStreamProcessorExtension.class);
 
     private static final int MINIMUM_NUMBER_OF_FEATURES = 2;
@@ -153,10 +159,16 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
     private List<VariableExpressionExecutor> featureVariableExpressionExecutors = new ArrayList<>();
 
     private double[] cepEvent;
+    //set attributes for OutputStream
+    List<Attribute> attributes = new ArrayList<>();
 
     @Override
-    protected List<Attribute> init(AbstractDefinition abstractDefinition, ExpressionExecutor[] expressionExecutors,
-                                   ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent, AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
         String modelPrefix;
         noOfAttributes = inputDefinition.getAttributeList().size();
         noOfParameters = attributeExpressionLength - noOfAttributes;
@@ -168,7 +180,7 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                 if (modelNameExecutor.getReturnType() == Attribute.Type.STRING) {
                     modelPrefix = (String) modelNameExecutor.getValue();
                     // model name = user given name + siddhi app name
-                    modelName = siddhiAppContext.getName() + "." + modelPrefix;
+                    modelName = siddhiQueryContext.getSiddhiAppContext().getName() + "." + modelPrefix;
                 } else {
                     throw new SiddhiAppValidationException(
                             "Invalid parameter type found for the model.name argument, "
@@ -223,10 +235,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                     MINIMUM_NUMBER_OF_PARAMETERS, MINIMUM_NUMBER_OF_FEATURES,
                     (attributeExpressionLength - noOfAttributes), noOfAttributes));
         }
-        //set attributes for OutputStream
-        List<Attribute> attributes = new ArrayList<>();
+
         attributes.add(new Attribute("meanSquaredError", Attribute.Type.DOUBLE));
-        return attributes;
+        return () -> new ExtensionState(modelName);
     }
 
     private void configureModelWithHyperParameters(String modelName) {
@@ -326,8 +337,9 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
     }
 
     @Override
-    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor processor,
-                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
@@ -338,10 +350,11 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
                     } catch (ClassCastException e) {
                         throw new SiddhiAppRuntimeException(String.format("Incompatible attribute feature type"
                                 + " at position %s. Not of numeric type. Please refer the stream definition "
-                                + "of Model[%s]", (i + 1), modelName));
+                                + "of Model[%s]", (i + 1), state.modelName));
                     }
                 }
-                AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().getAMRulesRegressorModel(modelName);
+                AdaptiveModelRulesModel model = RegressorModelHolder.getInstance().
+                        getAMRulesRegressorModel(state.modelName);
                 double meanSquaredError = model.trainOnEvent(cepEvent);
                 complexEventPopulater.populateComplexEvent(complexEvent, new Object[]{meanSquaredError});
             }
@@ -359,16 +372,41 @@ public class AdaptiveModelRulesUpdaterStreamProcessorExtension extends StreamPro
         RegressorModelHolder.getInstance().deleteRegressorModel(modelName);
     }
 
+
+
     @Override
-    public Map<String, Object> currentState() {
-        Map<String, Object> currentState = new HashMap<>();
-        currentState.put("RegressorModel", RegressorModelHolder.getInstance().getClonedPerceptronModel(modelName));
-        return currentState;
+    public List<Attribute> getReturnAttributes() {
+        return attributes;
     }
 
     @Override
-    public void restoreState(Map<String, Object> state) {
-        RegressorModelHolder.getInstance().addRegressorModel(modelName, (Regressor)
-                state.get("RegressorModel"));
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.BATCH;
+    }
+
+    static class ExtensionState extends State {
+        private String modelName;
+
+        private ExtensionState(String modelName) {
+            this.modelName = modelName;
+        }
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            Map<String, Object> currentState = new HashMap<>();
+            currentState.put("RegressorModel", RegressorModelHolder.getInstance().getClonedPerceptronModel(modelName));
+            return currentState;
+        }
+
+        @Override
+        public void restore(Map<String, Object> state) {
+            RegressorModelHolder.getInstance().addRegressorModel(modelName, (Regressor)
+                    state.get("RegressorModel"));
+        }
     }
 }
