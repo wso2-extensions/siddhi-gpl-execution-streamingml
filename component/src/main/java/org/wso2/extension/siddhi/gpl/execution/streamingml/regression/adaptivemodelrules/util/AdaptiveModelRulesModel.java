@@ -17,6 +17,7 @@
 package org.wso2.extension.siddhi.gpl.execution.streamingml.regression.adaptivemodelrules.util;
 
 import com.yahoo.labs.samoa.instances.Instance;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import moa.classifiers.core.driftdetection.ADWINChangeDetector;
 import moa.classifiers.core.driftdetection.ChangeDetector;
 import moa.classifiers.rules.AMRulesRegressor;
@@ -32,7 +33,6 @@ import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.AbstractRegressor;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.regression.Regressor;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 /**
  * Represents AMRules Regressor model

@@ -21,6 +21,7 @@ import com.yahoo.labs.samoa.instances.DenseInstance;
 import com.yahoo.labs.samoa.instances.Instance;
 import com.yahoo.labs.samoa.instances.Instances;
 import com.yahoo.labs.samoa.instances.InstancesHeader;
+import io.siddhi.core.exception.SiddhiAppRuntimeException;
 import moa.classifiers.trees.HoeffdingAdaptiveTree;
 import moa.core.ObjectRepository;
 import moa.options.AbstractOptionHandler;
@@ -30,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.ClassifierPrequentialModelEvaluation;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.MathUtil;
-import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
 
 import java.util.ArrayList;
 import java.util.Arrays;

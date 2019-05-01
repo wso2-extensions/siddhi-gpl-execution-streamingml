@@ -16,30 +16,35 @@
  */
 package org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree;
 
+import io.siddhi.annotation.Example;
+import io.siddhi.annotation.Extension;
+import io.siddhi.annotation.Parameter;
+import io.siddhi.annotation.ReturnAttribute;
+import io.siddhi.annotation.util.DataType;
+import io.siddhi.core.config.SiddhiQueryContext;
+import io.siddhi.core.event.ComplexEvent;
+import io.siddhi.core.event.ComplexEventChunk;
+import io.siddhi.core.event.stream.MetaStreamEvent;
+import io.siddhi.core.event.stream.StreamEvent;
+import io.siddhi.core.event.stream.StreamEventCloner;
+import io.siddhi.core.event.stream.holder.StreamEventClonerHolder;
+import io.siddhi.core.event.stream.populater.ComplexEventPopulater;
+import io.siddhi.core.exception.SiddhiAppRuntimeException;
+import io.siddhi.core.executor.ConstantExpressionExecutor;
+import io.siddhi.core.executor.ExpressionExecutor;
+import io.siddhi.core.executor.VariableExpressionExecutor;
+import io.siddhi.core.query.processor.ProcessingMode;
+import io.siddhi.core.query.processor.Processor;
+import io.siddhi.core.query.processor.stream.StreamProcessor;
+import io.siddhi.core.util.config.ConfigReader;
+import io.siddhi.core.util.snapshot.state.State;
+import io.siddhi.core.util.snapshot.state.StateFactory;
+import io.siddhi.query.api.definition.AbstractDefinition;
+import io.siddhi.query.api.definition.Attribute;
+import io.siddhi.query.api.exception.SiddhiAppValidationException;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util.AdaptiveHoeffdingModelsHolder;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.classification.hoeffdingtree.util.AdaptiveHoeffdingTreeModel;
 import org.wso2.extension.siddhi.gpl.execution.streamingml.util.CoreUtils;
-import org.wso2.siddhi.annotation.Example;
-import org.wso2.siddhi.annotation.Extension;
-import org.wso2.siddhi.annotation.Parameter;
-import org.wso2.siddhi.annotation.ReturnAttribute;
-import org.wso2.siddhi.annotation.util.DataType;
-import org.wso2.siddhi.core.config.SiddhiAppContext;
-import org.wso2.siddhi.core.event.ComplexEvent;
-import org.wso2.siddhi.core.event.ComplexEventChunk;
-import org.wso2.siddhi.core.event.stream.StreamEvent;
-import org.wso2.siddhi.core.event.stream.StreamEventCloner;
-import org.wso2.siddhi.core.event.stream.populater.ComplexEventPopulater;
-import org.wso2.siddhi.core.exception.SiddhiAppRuntimeException;
-import org.wso2.siddhi.core.executor.ConstantExpressionExecutor;
-import org.wso2.siddhi.core.executor.ExpressionExecutor;
-import org.wso2.siddhi.core.executor.VariableExpressionExecutor;
-import org.wso2.siddhi.core.query.processor.Processor;
-import org.wso2.siddhi.core.query.processor.stream.StreamProcessor;
-import org.wso2.siddhi.core.util.config.ConfigReader;
-import org.wso2.siddhi.query.api.definition.AbstractDefinition;
-import org.wso2.siddhi.query.api.definition.Attribute;
-import org.wso2.siddhi.query.api.exception.SiddhiAppValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,7 +93,8 @@ import java.util.Map;
                 )
         }
 )
-public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor {
+public class HoeffdingClassifierStreamProcessorExtension extends
+        StreamProcessor<HoeffdingClassifierStreamProcessorExtension.ExtensionState> {
     private static final int MINIMUM_NUMBER_OF_FEATURES = 2;
     private static final int MINIMUM_NUMBER_OF_PARAMETERS = 1;
 
@@ -96,12 +102,17 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
     private int noOfFeatures;
     private List<VariableExpressionExecutor> featureVariableExpressionExecutors = new ArrayList<>();
     private double[] cepEvent;
+    //set attributes for Output Stream
+    private List<Attribute> attributes = new ArrayList<Attribute>();
 
     @Override
-    protected List<Attribute> init(AbstractDefinition abstractDefinition,
-                                   ExpressionExecutor[] expressionExecutors,
-                                   ConfigReader configReader, SiddhiAppContext siddhiAppContext) {
-        String siddhiAppName = siddhiAppContext.getName();
+    protected StateFactory<ExtensionState> init(MetaStreamEvent metaStreamEvent, AbstractDefinition inputDefinition,
+                                                ExpressionExecutor[] attributeExpressionExecutors,
+                                                ConfigReader configReader,
+                                                StreamEventClonerHolder streamEventClonerHolder,
+                                                boolean outputExpectsExpiredEvents, boolean findToBeExecuted,
+                                                SiddhiQueryContext siddhiQueryContext) {
+        String siddhiAppName = siddhiQueryContext.getSiddhiAppContext().getName();
         String modelPrefix;
         noOfFeatures = inputDefinition.getAttributeList().size();
         if (attributeExpressionExecutors.length >= (MINIMUM_NUMBER_OF_FEATURES + MINIMUM_NUMBER_OF_PARAMETERS)) {
@@ -152,17 +163,15 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
                             + " but found %s parameters", (MINIMUM_NUMBER_OF_PARAMETERS + MINIMUM_NUMBER_OF_FEATURES),
                     MINIMUM_NUMBER_OF_FEATURES, attributeExpressionExecutors.length));
         }
-        //set attributes for Output Stream
-        List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("prediction", Attribute.Type.STRING));
         attributes.add(new Attribute("confidenceLevel", Attribute.Type.DOUBLE));
-        return attributes;
+        return () -> new ExtensionState();
     }
 
     @Override
-    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor
-            processor, StreamEventCloner streamEventCloner,
-                           ComplexEventPopulater complexEventPopulater) {
+    protected void process(ComplexEventChunk<StreamEvent> streamEventChunk, Processor nextProcessor,
+                           StreamEventCloner streamEventCloner, ComplexEventPopulater complexEventPopulater,
+                           ExtensionState state) {
         synchronized (this) {
             while (streamEventChunk.hasNext()) {
                 ComplexEvent complexEvent = streamEventChunk.next();
@@ -189,6 +198,7 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
         }
     }
 
+
     @Override
     public void start() {
     }
@@ -198,18 +208,38 @@ public class HoeffdingClassifierStreamProcessorExtension extends StreamProcessor
         AdaptiveHoeffdingModelsHolder.getInstance().deleteHoeffdingModel(modelName);
     }
 
+
+
     @Override
-    public Map<String, Object> currentState() {
-        Map<String, Object> currentState = new HashMap<>();
-        currentState.put("AdaptiveHoeffdingModelsMap", AdaptiveHoeffdingModelsHolder.
-                getInstance().getClonedHoeffdingModelMap());
-        return currentState;
+    public List<Attribute> getReturnAttributes() {
+        return attributes;
     }
 
     @Override
-    public void restoreState(Map<String, Object> state) {
-        AdaptiveHoeffdingModelsHolder.getInstance().
-                setHoeffdingModelMap((Map<String, AdaptiveHoeffdingTreeModel>) state.
-                        get("AdaptiveHoeffdingModelsMap"));
+    public ProcessingMode getProcessingMode() {
+        return ProcessingMode.BATCH;
+    }
+
+    static class ExtensionState extends State {
+
+        @Override
+        public boolean canDestroy() {
+            return false;
+        }
+
+        @Override
+        public Map<String, Object> snapshot() {
+            Map<String, Object> currentState = new HashMap<>();
+            currentState.put("AdaptiveHoeffdingModelsMap", AdaptiveHoeffdingModelsHolder.
+                    getInstance().getClonedHoeffdingModelMap());
+            return currentState;
+        }
+
+        @Override
+        public void restore(Map<String, Object> state) {
+            AdaptiveHoeffdingModelsHolder.getInstance().
+                    setHoeffdingModelMap((Map<String, AdaptiveHoeffdingTreeModel>) state.
+                            get("AdaptiveHoeffdingModelsMap"));
+        }
     }
 }
