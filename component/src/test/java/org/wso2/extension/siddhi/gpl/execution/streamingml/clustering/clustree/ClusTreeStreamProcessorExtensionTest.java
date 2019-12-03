@@ -25,6 +25,7 @@ import io.siddhi.core.query.output.callback.QueryCallback;
 import io.siddhi.core.stream.input.InputHandler;
 import io.siddhi.core.util.EventPrinter;
 import io.siddhi.core.util.SiddhiTestHelper;
+import io.siddhi.core.util.persistence.InMemoryPersistenceStore;
 import io.siddhi.query.compiler.exception.SiddhiParserException;
 import org.apache.log4j.Logger;
 import org.testng.AssertJUnit;
@@ -681,8 +682,8 @@ public class ClusTreeStreamProcessorExtensionTest {
         }
     }
 
-    /*@Test
-    public void testClusTree2D_23() throws Exception {
+    @Test
+    public void testClusTree2D_28() throws Exception {
         logger.info("ClusTreeStreamProcessorExtension Test - Test case for restarting Siddhi app");
         SiddhiManager siddhiManager = new SiddhiManager();
         siddhiManager.setPersistenceStore(new InMemoryPersistenceStore());
@@ -763,5 +764,5 @@ public class ClusTreeStreamProcessorExtensionTest {
         } finally {
             siddhiAppRuntime.shutdown();
         }
-    }*/
+    }
 }
