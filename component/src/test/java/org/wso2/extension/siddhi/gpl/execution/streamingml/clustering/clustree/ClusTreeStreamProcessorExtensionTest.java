@@ -112,6 +112,7 @@ public class ClusTreeStreamProcessorExtensionTest {
             logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
+            siddhiManager.shutdown();
         }
     }
 
@@ -274,6 +275,7 @@ public class ClusTreeStreamProcessorExtensionTest {
             logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
+            siddhiManager.shutdown();
         }
     }
 
@@ -592,11 +594,12 @@ public class ClusTreeStreamProcessorExtensionTest {
                 EventPrinter.print(inEvents);
             }
         });
-
-
         siddhiAppRuntime.start();
         InputHandler inputHandler = siddhiAppRuntime.getInputHandler("InputStream");
         inputHandler.send(new Object[]{5.7905, "hi"});
+        Thread.sleep(100);
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
     }
 
     @Test
@@ -674,6 +677,7 @@ public class ClusTreeStreamProcessorExtensionTest {
             logger.error(e.getCause().getMessage());
         } finally {
             siddhiAppRuntime.shutdown();
+            siddhiManager.shutdown();
         }
     }
 
