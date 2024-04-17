@@ -11,5 +11,10 @@
         "gpl-streamingml",
         "streamingml"
     ],
-    "releases": []
+    "releases": [
+        {
+            "tagName": "1.0.20",
+            "products": []
+        }
+    ]
 }
