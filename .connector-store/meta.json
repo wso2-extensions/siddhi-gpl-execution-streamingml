@@ -1,0 +1,20 @@
+{
+    "name": "gpl streamingml",
+    "owner": "WSO2",
+    "category": "Siddhi Execution",
+    "documentationUrl": "https://wso2-extensions.github.io/siddhi-gpl-execution-streamingml/",
+    "description": "The siddhi-execution-streamingml is an extension to Siddhi that performs streaming machine learning on event streams.",
+    "status": "Active",
+    "labels": [
+        "siddhi",
+        "siddhi-execution",
+        "gpl-streamingml",
+        "streamingml"
+    ],
+    "releases": [
+        {
+            "tagName": "1.0.20",
+            "products": []
+        }
+    ]
+}
